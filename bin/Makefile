@@ -444,6 +444,9 @@ else
 ifeq ("$(TECHNOLOGY)","Spartan3A")
 NETLISTTECH = Spartan3
 else
+ifeq ("$(TECHNOLOGY)","Spartan3A and Spartan3AN")
+NETLISTTECH = Spartan3
+else
 ifeq ("$(TECHNOLOGY)","Spartan3E")
 NETLISTTECH = Spartan3
 else
@@ -451,6 +454,7 @@ ifeq ("$(TECHNOLOGY)","Spartan-3A-DSP")
 NETLISTTECH = Spartan3
 else
 NETLISTTECH = $(TECHNOLOGY)
+endif
 endif
 endif
 endif
@@ -512,21 +516,21 @@ endif
 NUCF = $(UCF:%=-uc % )
 
 ise: $(TOP).ngc
-	ngdbuild  $(TOP).ngc -aul $(NUCF) -p $(DEVICE) -sd $(GRLIB)/netlists/xilinx/$(NETLISTTECH)
+	ngdbuild  $(TOP).ngc -aul $(NUCF) -p $(DEVICE) -sd "$(GRLIB)/netlists/xilinx/$(NETLISTTECH)"
 	map -pr b -w -ol $(EFFORT) -p $(DEVICE) $(TOP) $(ISEMAPOPT)
 	par -ol $(EFFORT) -w $(TOP) $(TOP).ncd
 	trce -v 5 $(TOP).ncd $(TOP).pcf
 	bitgen $(TOP) -d -m -w -f $(BITGEN)
 
 ise-synp: $(TOP)_synplify.prj synplify/$(TOP).edf
-	ngdbuild  synplify/$(TOP).edf -aul $(NUCF) -p $(DEVICE) -sd $(GRLIB)/netlists/xilinx/$(NETLISTTECH)
+	ngdbuild  synplify/$(TOP).edf -aul $(NUCF) -p $(DEVICE) -sd "$(GRLIB)/netlists/xilinx/$(NETLISTTECH)"
 	map -pr b -w -ol $(EFFORT) -p $(DEVICE) $(TOP) $(ISEMAPOPT)
 	par -ol $(EFFORT) -w $(TOP) $(TOP).ncd
 	trce -v 5 $(TOP).ncd $(TOP).pcf
 	bitgen $(TOP) -d -m -w -f $(BITGEN)
 
 ise-prec: $(TOP).psp precision/$(TOP).edf
-	ngdbuild   precision/$(TOP).edf -aul $(NUCF) -p $(DEVICE) -sd $(GRLIB)/netlists/xilinx/$(NETLISTTECH)
+	ngdbuild   precision/$(TOP).edf -aul $(NUCF) -p $(DEVICE) -sd "$(GRLIB)/netlists/xilinx/$(NETLISTTECH)"
 	map -pr b -w -ol $(EFFORT) -p $(DEVICE) $(TOP) $(ISEMAPOPT)
 	par -ol $(EFFORT) -w $(TOP) $(TOP).ncd
 	trce -v 5 $(TOP).ncd $(TOP).pcf
