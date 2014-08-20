@@ -60,7 +60,8 @@ entity mctrl is
     syncrst   : integer := 0;
     pageburst : integer := 0;
     scantest  : integer := 0;
-    mobile    : integer := 0
+    mobile    : integer := 0;
+    lowbus    : integer := 0            -- Memory is wired on low bits of the data bus
   );
   port (
     rst       : in  std_ulogic;
@@ -102,6 +103,7 @@ constant WPROTEN : boolean := (wprot /= 0);
 constant WENDFB  : boolean := false;
 constant SDSEPBUS: boolean := (sepbus /= 0);
 constant BUS64   : boolean := (sdbits = 64);
+constant LOWBUSDQ : boolean := (lowbus /= 0);
 
 constant rom : integer := 0;
 constant io  : integer := 1;
@@ -245,6 +247,7 @@ begin
   variable vsbdrive : std_logic_vector(63 downto 0);
   variable bdrive_sel : std_logic_vector(3 downto 0);
   variable haddrsel   : std_logic_vector(31 downto 13);
+  variable bdindex                : integer range 0 to 2;
   begin 
 
 -- Variable default settings to avoid latches
@@ -259,7 +262,7 @@ begin
     vbdrive := rbdrive; vsbdrive := rsbdrive; 
     
     v.data := memi.data; v.bexcn := memi.bexcn; v.brdyn := memi.brdyn;
-    if (((r.brdyn and r.mcfg1.brdyen) = '1') and (r.area(io) = '1')) or
+    if (((r.brdyn and r.mcfg1.brdyen) = '1') and ((r.area(io) = '1') or (r.area(rom) = '1'))) or
        (((r.brdyn and r.mcfg2.brdyen) = '1') and (r.area(ram) = '1') and
 	 (r.ramsn(4) = '0') and RAMSEL5)
     then
@@ -336,11 +339,19 @@ begin
 -- generate data buffer enables
 
     bdrive := (others => '1');
+    if LOWBUSDQ then 
     case r.busw is
+        when "00"   => if BUS8EN then bdrive  := "0100"; end if;
+        when "01"   => if BUS16EN then bdrive := "1100"; end if;
+        when others =>
+      end case;
+    else
+      case r.busw is
     when "00" => if BUS8EN then bdrive := "0001"; end if;
     when "01" => if BUS16EN then bdrive := "0011"; end if;
     when others =>
     end case;
+    end if;
 
 -- generate chip select and output enable
 
@@ -416,12 +427,23 @@ begin
 
 -- Select read data depending on bus width
 
+    if LOWBUSDQ then         
+      -- For hardware where the chip DQ is wired to the low order bits
     if BUS8EN and (r.busw = "00") then
+        memdata := r.readdata(23 downto 0) & r.data(15 downto 8);
+      elsif BUS16EN and (r.busw = "01") then
+        memdata := r.readdata(15 downto 0) & r.data(15 downto 0);
+      else
+        memdata := r.data;
+      end if;
+    else
+      if BUS8EN and (r.busw = "00") then
       memdata := r.readdata(23 downto 0) & r.data(31 downto 24);
     elsif BUS16EN and (r.busw = "01") then
       memdata := r.readdata(15 downto 0) & r.data(31 downto 16);
     else
       memdata := r.data;
+      end if;
     end if;
 
     bwdata := memdata;
@@ -451,6 +473,15 @@ begin
 	writedata(31 downto 8) := bwdata(31 downto 8);
       end case;
     end if;
+    if LOWBUSDQ then  
+      if (r.brmw = '1') and (r.busw = "01") and BUS16EN then
+        if (r.address(0) = '0') then
+          writedata(7 downto 0) := r.data(7 downto 0);
+        else
+          writedata(15 downto 8) := r.data(15 downto 8);
+        end if;
+      end if;
+    else    
     if (r.brmw = '1') and (r.busw = "01") and BUS16EN then
       if r.address(1) = '1' then
         writedata(31 downto 16) := writedata(15 downto 0);
@@ -461,24 +492,37 @@ begin
         writedata(31 downto 24) :=  r.data(31 downto 24);
       end if;
     end if;
+    end if;
 
 -- save read data during 8/16 bit reads
-
+    if LOWBUSDQ then  
+      if BUS8EN and (r.ready8 = '1') and (r.busw = "00") then
+        v.readdata := v.readdata(23 downto 0) & r.data(7 downto 0);
+      elsif BUS16EN and (r.ready8 = '1') and (r.busw = "01") then
+        v.readdata := v.readdata(15 downto 0) & r.data(15 downto 0);
+      end if;
+    else
     if BUS8EN and (r.ready8 = '1') and (r.busw = "00") then
       v.readdata := v.readdata(23 downto 0) & r.data(31 downto 24);
     elsif BUS16EN and (r.ready8 = '1') and (r.busw = "01") then
       v.readdata := v.readdata(15 downto 0) & r.data(31 downto 16);
+      end if;
     end if;
 
 -- Ram, rom, IO access FSM
 
     if r.read = '1' then wsnew := rws; else wsnew := wws; end if;
 
+    if LOWBUSDQ then      
+      bdindex := 2;
+    else
+      bdindex := 0;
+    end if;
     case r.bstate is
     when idle =>
       v.ws := wsnew;
 
-      if r.bdrive(0) = '1' then
+        if r.bdrive(bdindex) = '1' then
 
         if r.busw(1) = '1' then
           v.writedata(31 downto 16) := writedata(31 downto 16);
@@ -611,7 +655,11 @@ begin
         end if;
         if (r.ready8 = '1') then
 	  v.address(1 downto 0) := r.address(1 downto 0) + 1; v.ws := rws;
+            if LOWBUSDQ then
+              v.writedata(15 downto 0) := r.writedata(23 downto 16) & r.writedata8(15 downto 8);
+            else
 	  v.writedata(31 downto 16) := r.writedata(23 downto 16) & r.writedata8(15 downto 8);
+            end if;
 	  v.writedata8(15 downto 8) := r.writedata8(7 downto 0);
 	  v.bstate := idle;
 
@@ -661,7 +709,11 @@ begin
         end if;
         if (r.ready8 = '1') then
 	  v.address(1) := not r.address(1); v.ws := rws;
+            if LOWBUSDQ then
+              v.writedata(15 downto 0) := r.writedata8(15 downto 0);
+            else 
 	  v.writedata(31 downto 16) := r.writedata8(15 downto 0);
+            end if;
 	  v.bstate := idle;
         end if;
         if r.ws /= "0000" then v.ws := r.ws - 1; end if;
