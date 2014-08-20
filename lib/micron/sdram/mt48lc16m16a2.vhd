@@ -1246,7 +1246,7 @@ BEGIN
                         Bank3 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*32+index to i*32+index+15));
 		      end loop;
                     END IF;
-		  else
+		  elsif(index < 1024) then
 		    Bank_Load := recaddr(26 downto 25);
 		    Rows_Load := recaddr(24 downto 12);
 		    Cols_Load := recaddr(11 downto 3);
@@ -1266,6 +1266,75 @@ BEGIN
                     ELSIF Bank_Load = "11" THEN
 		      for i in 0 to 1 loop
                         Bank3 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*64+index-32 to i*64+index-32+15));
+                        end loop;
+                    END IF;
+		  elsif(index < 2048) then -- 1024 or above
+                                   -- 4 Banks / 12 Rows / 8 Columns (8 MByte)
+                    Bank_Load := recaddr(22 downto 21);
+                    Rows_Load := '0' & recaddr(20 downto 9);
+                    Cols_Load := '0' & recaddr(8 downto 1);
+                    Init_Mem (Bank_Load, To_Integer(Rows_Load));
+                    IF Bank_Load = "00" THEN
+                      for i in 0 to 7 loop
+                                Bank0 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16 to i*16+15));
+                      end loop;
+                    ELSIF Bank_Load = "01" THEN
+                      for i in 0 to 7 loop
+                                Bank1 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16 to i*16+15));
+                      end loop;
+                    ELSIF Bank_Load = "10" THEN
+                      for i in 0 to 7 loop
+                                Bank2 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16 to i*16+15));
+                      end loop;
+                    ELSIF Bank_Load = "11" THEN
+                      for i in 0 to 7 loop
+                                Bank3 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16 to i*16+15));
+                      end loop;
+                    END IF;
+               elsif(index < 4096) then --  
+               -- 4 Banks / 13 Rows / 9 Columns (32 MByte)
+                    Bank_Load := recaddr(24 downto 23);
+                    Rows_Load := recaddr(22 downto 10);
+                    Cols_Load := recaddr(9 downto 1);
+                    Init_Mem (Bank_Load, To_Integer(Rows_Load));
+                    IF Bank_Load = "00" THEN
+                      for i in 0 to 7 loop
+                                Bank0 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16 to i*16+15));
+                      end loop;
+                    ELSIF Bank_Load = "01" THEN
+                      for i in 0 to 7 loop
+                                Bank1 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16 to i*16+15));
+                      end loop;
+                    ELSIF Bank_Load = "10" THEN
+                      for i in 0 to 7 loop
+                                Bank2 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16 to i*16+15));
+                      end loop;
+                    ELSIF Bank_Load = "11" THEN
+                      for i in 0 to 7 loop
+                                Bank3 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16 to i*16+15));
+                      end loop;
+                    END IF;
+                 else
+                -- 2 x chips x 4 Banks / 13 Rows / 9 Columns (32 MByte)
+                     Bank_Load := recaddr(25 downto 24);
+                    Rows_Load := recaddr(23 downto 11);
+                    Cols_Load := recaddr(10 downto 2);
+                    Init_Mem (Bank_Load, To_Integer(Rows_Load));
+                    IF Bank_Load = "00" THEN
+                      for i in 0 to 3 loop
+                                Bank0 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16+index-4096 to i*16+index-4096+15));
+                      end loop;
+                    ELSIF Bank_Load = "01" THEN
+                      for i in 0 to 3 loop
+                                Bank1 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16+index-4096 to i*16+index-4096+15));
+                      end loop;
+                    ELSIF Bank_Load = "10" THEN
+                      for i in 0 to 3 loop
+                                Bank2 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16+index-4096 to i*16+index-4096+15));
+                      end loop;
+                    ELSIF Bank_Load = "11" THEN
+                      for i in 0 to 3 loop
+                                Bank3 (To_Integer(Rows_Load)) (To_Integer(Cols_Load)+i) := ('1' & recdata(i*16+index-4096 to i*16+index-4096+15));
 		      end loop;
                     END IF;
                   END IF;
