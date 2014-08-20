@@ -1,1 +1,3 @@
+components.vhd 
 s29gl128p.vhd
+
