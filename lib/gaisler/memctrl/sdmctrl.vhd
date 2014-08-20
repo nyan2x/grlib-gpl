@@ -122,6 +122,7 @@ type reg_type is record
   
   idlecnt       : std_logic_vector(3 downto 0); -- Counter, 16 idle clock sycles before entering Power-Saving mode
   sref_tmpcom   : std_logic_vector(2 downto 0); -- Save SD command when exit sref
+    refpending  : std_ulogic;
 end record;
 
 
@@ -496,6 +497,7 @@ begin
       v.sdwen := '1'; --v.cfg.command := "000";
       v.cfg.command := r.sref_tmpcom; v.sref_tmpcom := "000";
       v.cmstate := leadout; v.trfc := (r.cfg.trp and r.cfg.mobileen(1)) & r.cfg.trfc;
+        v.refpending := '0';
     when leadout =>
       if r.trfc = "0000" then v.cmstate := midle; end if;
 
@@ -554,6 +556,10 @@ begin
 
       if (r.cfg.renable = '1') and (r.istate = finish) and r.sdstate /= sref then 
 	v.refresh := r.refresh - 1;
+      -- If close to a refresh, pass busy to mctrl
+      if (v.refresh(14 downto 5) = "0000000000") then
+       v.refpending := '1';
+      end if; 
         if (v.refresh(14) and not r.refresh(14))  = '1' then 
 	  v.refresh := r.cfg.refresh;
 	  v.cfg.command := "100";
@@ -640,7 +646,7 @@ begin
     else
       if (r.sdstate < wr4) or (r.startsd = '1') then v.busy := '1';end if;
     end if;
-    v.busy := v.busy or r.bdelay;
+    v.busy  := v.busy or r.bdelay or v.refpending;
     busy := v.busy or r.busy;
     v.aload := r.busy and not v.busy;
     aload := v.aload;
@@ -656,6 +662,7 @@ begin
       v.mstate	      := midle; 
       v.istate	      := iidle; 
       v.cmstate	      := midle; 
+      v.address     := (others => '0');
       v.hsel	      := '0';
       v.cfg.command   := "000";
       v.cfg.csize     := "10";
@@ -670,6 +677,7 @@ begin
       v.casn	      := '1';
       v.hready	      := '1';
       v.startsd       := '0';
+      v.refpending  := '0';
       if (pageburst = 2) then
         v.cfg.pageburst   :=  '0';
       end if;
