@@ -1,0 +1,134 @@
+NET "resetn"  IOSTANDARD = LVCMOS33 | LOC=AD12; 
+NET "resetn" PULLUP;
+         
+NET "clk_ref"  IOSTANDARD = LVCMOS33 | LOC=K14; 
+NET "clk_ref" 	TNM_NET = "clk_ref";
+TIMESPEC "TS_clk_ref" = PERIOD "clk_ref" 50.0 ns HIGH 50 %;     
+
+NET "errorn"  IOSTANDARD = LVCMOS33 |  LOC=V19; 
+
+NET "bus_flash_ncs" IOSTANDARD = LVCMOS33 | LOC=C25;
+NET "bus_flash_nreset" IOSTANDARD = LVCMOS33 | LOC=M19; 
+NET "bus_flash_nbusy" IOSTANDARD = LVCMOS33 | LOC=B26 | PULLUP;
+NET "usb_ncs"  IOSTANDARD = LVCMOS33 |  LOC=AA12;
+NET "ram_ncs"  IOSTANDARD = LVCMOS33 | LOC=D13;
+
+NET "bus_*" FAST;
+NET "bus_*" IOSTANDARD = LVCMOS33;
+
+NET "clkm" 		TNM_NET = "clkm";
+NET "lclk" 		TNM_NET = "lclk";
+
+NET "erx_clk" IOSTANDARD = LVCMOS33 | LOC=B14; 
+NET "erx_clk" 	TNM_NET = "erx_clk";
+
+TIMESPEC "TS_erx_clk" = PERIOD "erx_clk" 40.0 ns HIGH 50 %;
+TIMESPEC "TS_clkm_erx_clk" = FROM "clkm" TO "erx_clk" TIG;
+TIMESPEC "TS_erx_clk_clkm" = FROM "erx_clk" TO "clkm" TIG;
+OFFSET = IN 10 ns VALID 20 ns BEFORE "erx_clk" RISING;
+
+
+NET "erxd(3)" IOSTANDARD = LVCMOS33 | LOC=G5;
+NET "erxd(2)" IOSTANDARD = LVCMOS33 | LOC=D1;
+NET "erxd(1)" IOSTANDARD = LVCMOS33 | LOC=D2;
+NET "erxd(0)" IOSTANDARD = LVCMOS33 | LOC=C1;
+NET "erx_dv" IOSTANDARD = LVCMOS33 | LOC=C2;
+NET "erx_er" IOSTANDARD = LVCMOS33 | LOC=A7;
+NET "erx_col" IOSTANDARD = LVCMOS33 | LOC=G1;
+NET "erx_crs" IOSTANDARD = LVCMOS33 | LOC=A5;
+NET "etxd(3)" IOSTANDARD = LVCMOS33 | FAST | LOC=F5;
+NET "etxd(2)" IOSTANDARD = LVCMOS33 | FAST | LOC=G6;
+NET "etxd(1)" IOSTANDARD = LVCMOS33 | FAST | LOC=E1;
+NET "etxd(0)" IOSTANDARD = LVCMOS33 | FAST | LOC=F4;
+NET "etx_en" IOSTANDARD = LVCMOS33 | FAST | LOC=F3;
+NET "emdc" IOSTANDARD = LVCMOS33 | LOC=B2;
+NET "emdio" IOSTANDARD = LVCMOS33 | LOC=D3;
+NET "erstn" IOSTANDARD = LVCMOS33 | LOC=E4;
+
+NET "led_romcs" IOSTANDARD = LVCMOS33 | SLOW | LOC=AA10;   # BLUE #5
+NET "led_rombrdyn" IOSTANDARD = LVCMOS33 | SLOW | LOC=V11; # RED 4
+  
+     
+NET "bus_a(24)" LOC=N21;
+NET "bus_a(23)" LOC=N24;
+NET "bus_a(22)" LOC=L22;
+NET "bus_a(21)" LOC=J22;     
+NET "bus_a(20)" LOC=J26;
+NET "bus_a(19)" LOC=B17;
+NET "bus_a(18)" LOC=C17;
+NET "bus_a(17)" LOC=AB12;
+NET "bus_a(16)" LOC=Y20;
+NET "bus_a(15)" LOC=AB23;
+NET "bus_a(14)" LOC=L24;
+NET "bus_a(13)" LOC=M26;
+NET "bus_a(12)" LOC=AE26;
+NET "bus_a(11)" LOC=M25;
+NET "bus_a(10)" LOC=M1;
+NET "bus_a(9)" LOC=K25;
+NET "bus_a(8)" LOC=J25;
+NET "bus_a(7)" LOC=J21;
+NET "bus_a(6)" LOC=C18;
+NET "bus_a(5)" LOC=C16;
+NET "bus_a(4)" LOC=C15;
+NET "bus_a(3)" LOC=A15;
+NET "bus_a(2)" LOC=A12;
+NET "bus_a(1)" LOC=AD15;
+NET "bus_a(0)" LOC=L3;
+
+
+NET "bus_d(31)" LOC=P23;
+NET "bus_d(30)" LOC=P21;
+NET "bus_d(29)" LOC=R20;
+NET "bus_d(28)" LOC=R19;
+NET "bus_d(27)" LOC=T20;
+NET "bus_d(26)" LOC=U22;
+NET "bus_d(25)" LOC=U20;
+NET "bus_d(24)" LOC=F25;
+NET "bus_d(23)" LOC=Y25;
+NET "bus_d(22)" LOC=V24;
+NET "bus_d(21)" LOC=V23;
+NET "bus_d(20)" LOC=U21;
+NET "bus_d(19)" LOC=T17;
+NET "bus_d(18)" LOC=T18;
+NET "bus_d(17)" LOC=P6;
+NET "bus_d(16)" LOC=P18;
+NET "bus_d(15)" LOC=P26;
+NET "bus_d(14)" LOC=P22;
+NET "bus_d(13)" LOC=P20;
+NET "bus_d(12)" LOC=R25;
+NET "bus_d(11)" LOC=R22;
+NET "bus_d(10)" LOC=R21;
+NET "bus_d(9)" LOC=T24;
+NET "bus_d(8)" LOC=K26;
+NET "bus_d(7)" LOC=G24;
+NET "bus_d(6)" LOC=U24;
+NET "bus_d(5)" LOC=U23;
+NET "bus_d(4)" LOC=T23;
+NET "bus_d(3)" LOC=R17;
+NET "bus_d(2)" LOC=R18;
+NET "bus_d(1)" LOC=R26;
+NET "bus_d(0)" LOC=P25;
+
+NET "bus_sdram_clk" LOC=F13;
+NET "bus_sdram_cke" LOC=V22;
+NET "bus_sdram_feedback" LOC=AA14;
+NET "bus_sdram_ncs" LOC=W20;
+NET "bus_nwe" LOC=M3;
+NET "bus_sdram_nras" LOC=AA22;
+NET "bus_sdram_ncas" LOC=AA24;
+NET "bus_noe" LOC=AD11;
+
+NET "bus_nbe(3)" LOC=V25;
+NET "bus_nbe(2)" LOC=AA25;
+NET "bus_nbe(1)" LOC=A22;
+NET "bus_nbe(0)" LOC=U19;
+
+NET "uart_txd"  IOSTANDARD = LVCMOS33 | LOC=M6;
+NET "uart_rxd"  IOSTANDARD = LVCMOS33 | LOC=N7;
+NET "dsu_txd"  IOSTANDARD = LVCMOS33 | LOC=M8;
+NET "dsu_rxd" IOSTANDARD = LVCMOS33 |  LOC=N6;
+NET "dsubre"  IOSTANDARD = LVCMOS33 | LOC=AB6;
+
+NET "plllock" IOSTANDARD = LVCMOS33 |  LOC=R1;
+
+
