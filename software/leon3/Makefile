@@ -62,7 +62,7 @@ cgtest.o : cgtest.c
 lib3tests.a: $(OFILES)
 	$(XAR) -cr lib3tests.a $(OFILES)
 
-soft: prom.srec ram.srec $(EXTRA_SOFT)
+soft: prom.srec sdram.srec ram.srec $(EXTRA_SOFT)
 
 prom.o: prom.S prom.h
 	$(XAS) $<
@@ -75,6 +75,8 @@ prom.srec: prom.exe
 systest.exe: systest.c lib3tests.a
 	$(XCC) $(XCFLAGS) systest.c $(XLDFLAGS) -o systest.exe
 
+sdram.srec: standalone.exe
+	sparc-elf-objcopy -O srec standalone.exe sdram.srec
 ram.srec: systest.exe
 	sparc-elf-objcopy -O srec --gap-fill 0 systest.exe ram.srec
 
@@ -83,6 +85,10 @@ soft-clean:
 
 mmusoft:
 	make -f Makefile.img mmusoft
+prom.dbo: prom.exe
+	sparc-elf-objdump -S prom.exe >prom.dbo
+standalone.dbo: standalone.exe
+	sparc-elf-objdump -S standalone.exe >standalone.dbo
 
 standalone.exe: systest.c standalone.c lib3tests.a
 	$(XCC) $(XCFLAGS) systest.c $(VPATH)/standalone.c $(XLDFLAGS) -o standalone.exe
