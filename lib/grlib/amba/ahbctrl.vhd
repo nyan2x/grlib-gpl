@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -65,7 +65,8 @@ entity ahbctrl is
     acdm        : integer := 0;  --AMBA compliant data muxing (for hsize > word)
     index       : integer := 0;  --Index for trace print-out
     ahbtrace    : integer := 0;  --AHB trace enable
-    hwdebug     : integer := 0   --Hardware debug 
+    hwdebug     : integer := 0;  --Hardware debug
+    fourgslv    : integer := 0   --1=Single slave with single 4 GB bar
   );
   port (
     rst     : in  std_ulogic;
@@ -418,26 +419,32 @@ begin
 
     hsel := (others => '0'); hmbsel := (others => '0');
 
-    for i in 0 to nahbs-1 loop
-      for j in NAHBIR to NAHBCFG-1 loop
-        area := slvo(i).hconfig(j)(1 downto 0);
-        case area is
-	when "10" =>
-          if ((ioen = 0) or ((IOAREA and IOMSK) /= (haddr(31 downto 20) and IOMSK))) and
-             ((slvo(i).hconfig(j)(31 downto 20) and slvo(i).hconfig(j)(15 downto 4)) = 
-              (haddr(31 downto 20) and slvo(i).hconfig(j)(15 downto 4))) and 
-	      (slvo(i).hconfig(j)(15 downto 4) /= "000000000000")
-          then hsel(i) := '1'; hmbsel(j-NAHBIR) := '1'; end if;
-	when "11" =>
-          if ((ioen /= 0) and ((IOAREA and IOMSK) = (haddr(31 downto 20) and IOMSK))) and
-             ((slvo(i).hconfig(j)(31 downto 20) and slvo(i).hconfig(j)(15 downto 4)) = 
-              (haddr(19 downto  8) and slvo(i).hconfig(j)(15 downto 4))) and 
-	      (slvo(i).hconfig(j)(15 downto 4) /= "000000000000")
-          then hsel(i) := '1'; hmbsel(j-NAHBIR) := '1'; end if;
-	when others =>
-        end case;
+    if fourgslv = 0 then
+      for i in 0 to nahbs-1 loop
+        for j in NAHBIR to NAHBCFG-1 loop
+          area := slvo(i).hconfig(j)(1 downto 0);
+          case area is
+            when "10" =>
+              if ((ioen = 0) or ((IOAREA and IOMSK) /= (haddr(31 downto 20) and IOMSK))) and
+                ((slvo(i).hconfig(j)(31 downto 20) and slvo(i).hconfig(j)(15 downto 4)) = 
+                 (haddr(31 downto 20) and slvo(i).hconfig(j)(15 downto 4))) and 
+                (slvo(i).hconfig(j)(15 downto 4) /= "000000000000")
+              then hsel(i) := '1'; hmbsel(j-NAHBIR) := '1'; end if;
+            when "11" =>
+              if ((ioen /= 0) and ((IOAREA and IOMSK) = (haddr(31 downto 20) and IOMSK))) and
+                ((slvo(i).hconfig(j)(31 downto 20) and slvo(i).hconfig(j)(15 downto 4)) = 
+                 (haddr(19 downto  8) and slvo(i).hconfig(j)(15 downto 4))) and 
+                (slvo(i).hconfig(j)(15 downto 4) /= "000000000000")
+              then hsel(i) := '1'; hmbsel(j-NAHBIR) := '1'; end if;
+            when others =>
+          end case;
+        end loop;
       end loop;
-    end loop;
+    else
+      -- There is only one slave on the bus. The slave has only one bar, which
+      -- maps 4 GB address space.
+      hsel(0) := '1'; hmbsel(0) := '1';
+    end if;
 
     if r.defmst = '1' then hsel := (others => '0'); end if;
     
@@ -791,7 +798,7 @@ begin
         for j in 1 to NAHBIR-1 loop 
           assert (msto(i).hconfig(j) = zx or FULLPNP or ccheck = 0 or cfgmask = 0)
             report "AHB master " & tost(i) & " propagates non-zero user defined PnP data, " &
-            "but AHBCTRL full PnP decoding has not been enabled"
+            "but AHBCTRL full PnP decoding has not been enabled (check fpnpen VHDL generic)"
             severity warning;
         end loop;
 	assert (msto(i).hindex = i) or (icheck = 0)
@@ -801,7 +808,8 @@ begin
         for j in 0 to NAHBCFG-1 loop 
           assert (msto(i).hconfig(j) = zx or ccheck = 0)
             report "AHB master " & tost(i) & " appears to be disabled, " &
-            "but the master config record is not driven to zero"
+            "but the master config record is not driven to zero " &
+            "(check vendor ID or drive unused bus index with appropriate values)."
             severity warning;
         end loop;
       end if;
@@ -811,7 +819,8 @@ begin
         for j in 0 to NAHBCFG-1 loop 
           assert (msto(i).hconfig(j) = zx or ccheck = 0)
             report "AHB master " & tost(i) & " is outside the range of " &
-            "decoded master indexes but the master config record is not driven to zero"
+            "decoded master indexes but the master config record is not driven to zero " &
+            "(check nahbm VHDL generic)."
             severity warning;
         end loop;
       end loop;
@@ -830,7 +839,7 @@ begin
         for j in 1 to NAHBIR-1 loop 
           assert (slvo(i).hconfig(j) = zx or FULLPNP or ccheck = 0 or cfgmask = 0)
             report "AHB slave " & tost(i) & " propagates non-zero user defined PnP data, " &
-            "but AHBCTRL full PnP decoding has not been enabled"
+            "but AHBCTRL full PnP decoding has not been enabled (check fpnpen VHDL generic)."
             severity warning;
         end loop;
         for j in NAHBIR to NAHBCFG-1 loop
@@ -839,12 +848,12 @@ begin
           memmap(i)(j mod NAHBIR).start := (others => '0');
           memmap(i)(j mod NAHBIR).stop := (others => '0');
           memmap(i)(j mod NAHBIR).io := slvo(i).hconfig(j)(0);
-	  if (mask /= "000000000000") then
+	  if (mask /= "000000000000" or fourgslv = 1) then
             case area is
 	    when "01" =>
 	    when "10" =>
-	      k := 0;
-              while (k<15) and (mask(k) = '0') loop k := k+1; end loop;
+              k := 0;              
+              while (k<12) and (mask(k) = '0') loop k := k+1; end loop;
               if debug > 1 then
                 std.textio.write(L1, "ahbctrl:       memory at " &
                 tost(slvo(i).hconfig(j)(31 downto 20) and mask) &
@@ -873,8 +882,8 @@ begin
                 severity warning;
 	    when "11" =>
               if ioen /= 0 then
-	        k := 0;
-                while (k<15) and (mask(k) = '0') loop k := k+1; end loop; 
+                k := 0;
+                while (k<12) and (mask(k) = '0') loop k := k+1; end loop;
                 memmap(i)(j mod NAHBIR).start := iostart & (slvo(i).hconfig(j)(31 downto 20) and
                                                             slvo(i).hconfig(j)(15 downto 4));
                 memmap(i)(j mod NAHBIR).stop := memmap(i)(j mod NAHBIR).start + 2**k - 1;
@@ -923,7 +932,8 @@ begin
         for j in 0 to NAHBCFG-1 loop 
           assert (slvo(i).hconfig(j) = zx or ccheck = 0)
             report "AHB slave " & tost(i) & " appears to be disabled, " &
-            "but the slave config record is not driven to zero"
+            "but the slave config record is not driven to zero " &
+            "(check vendor ID or drive unused bus index with appropriate values)."
             severity warning;
         end loop;
       end if;
@@ -933,7 +943,8 @@ begin
         for j in 0 to NAHBCFG-1 loop 
           assert (slvo(i).hconfig(j) = zx or ccheck = 0)
             report "AHB slave " & tost(i) & " is outside the range of " &
-            "decoded slave indexes but the slave config record is not driven to zero"
+            "decoded slave indexes but the slave config record is not driven to zero " &
+            "(check nahbs VHDL generic)."
             severity warning;
         end loop;
       end loop;

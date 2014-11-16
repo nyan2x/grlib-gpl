@@ -24,6 +24,8 @@
 #define CONFIG_SYN_TECH stratix3
 #elif defined CONFIG_SYN_CYCLONEIII
 #define CONFIG_SYN_TECH cyclone3
+#elif defined CONFIG_SYN_EASIC45
+#define CONFIG_SYN_TECH easic45
 #elif defined CONFIG_SYN_EASIC90
 #define CONFIG_SYN_TECH easic90
 #elif defined CONFIG_SYN_IHP25
@@ -657,6 +659,10 @@
 
 #ifndef CONFIG_AHB_RROBIN
 #define CONFIG_AHB_RROBIN 0
+#endif
+
+#ifndef CONFIG_AHB_FPNPEN
+#define CONFIG_AHB_FPNPEN 0
 #endif
 
 #ifndef CONFIG_AHB_IOADDR

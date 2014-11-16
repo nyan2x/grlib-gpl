@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -60,7 +60,8 @@ component grusbhc_net is
     memtech     : integer range 0 to NTECH := DEFMEMTECH;
     memsel      : integer                  := 0;
     syncprst    : integer range 0 to 1     := 0;
-    sysfreq     : integer                  := 65000);
+    sysfreq     : integer                  := 65000;
+    pcidev      : integer range 0 to 1     := 0);
   port (
     clk               : in  std_ulogic;
     uclk              : in  std_ulogic;
@@ -88,7 +89,7 @@ component grusbhc_net is
     uhc_ahbsi_hsize   : in  std_logic_vector(2 downto 0);
     uhc_ahbsi_hwdata  : in  std_logic_vector(31 downto 0);
     uhc_ahbsi_hready  : in  std_ulogic;
-    -- EHC ahb_mst_out_type_unwrapped 
+    -- EHC ahb_mst_out_type_unwrapped
     ehc_ahbmo_hbusreq : out std_ulogic;
     ehc_ahbmo_hlock   : out std_ulogic;
     ehc_ahbmo_htrans  : out std_logic_vector(1 downto 0);
@@ -197,12 +198,12 @@ component grusbhc_net is
     testoen           : in  std_ulogic);
   end component;
 
-component grspwc_net 
+component grspwc_net
   generic(
     tech         : integer := 0;
     sysfreq      : integer := 40000;
     usegen       : integer range 0 to 1  := 1;
-    nsync        : integer range 1 to 2  := 1; 
+    nsync        : integer range 1 to 2  := 1;
     rmap         : integer range 0 to 1  := 0;
     rmapcrc      : integer range 0 to 1  := 0;
     fifosize1    : integer range 4 to 32 := 32;
@@ -217,11 +218,11 @@ component grspwc_net
     txclk        : in  std_ulogic;
     --ahb mst in
     hgrant       : in  std_ulogic;
-    hready       : in  std_ulogic;   
+    hready       : in  std_ulogic;
     hresp        : in  std_logic_vector(1 downto 0);
-    hrdata       : in  std_logic_vector(31 downto 0); 
+    hrdata       : in  std_logic_vector(31 downto 0);
     --ahb mst out
-    hbusreq      : out  std_ulogic;        
+    hbusreq      : out  std_ulogic;
     hlock        : out  std_ulogic;
     htrans       : out  std_logic_vector(1 downto 0);
     haddr        : out  std_logic_vector(31 downto 0);
@@ -230,7 +231,7 @@ component grspwc_net
     hburst       : out  std_logic_vector(2 downto 0);
     hprot        : out  std_logic_vector(3 downto 0);
     hwdata       : out  std_logic_vector(31 downto 0);
-    --apb slv in 
+    --apb slv in
     psel	 : in   std_ulogic;
     penable	 : in   std_ulogic;
     paddr	 : in   std_logic_vector(31 downto 0);
@@ -249,12 +250,13 @@ component grspwc_net
     tickout      : out  std_ulogic;
     --irq
     irq          : out  std_logic;
-    --misc     
+    --misc
     clkdiv10     : in   std_logic_vector(7 downto 0);
     dcrstval     : in   std_logic_vector(9 downto 0);
     timerrstval  : in   std_logic_vector(11 downto 0);
     --rmapen
     rmapen       : in   std_ulogic;
+    rmapnodeaddr : in   std_logic_vector(7 downto 0);
     --clk bufs
     rxclki       : in std_logic_vector(1 downto 0);
     nrxclki      : in std_logic_vector(1 downto 0);
@@ -265,14 +267,14 @@ component grspwc_net
     rxwrite      : out  std_ulogic;
     rxwdata      : out  std_logic_vector(31 downto 0);
     rxwaddress   : out  std_logic_vector(4 downto 0);
-    rxrdata      : in   std_logic_vector(31 downto 0);    
+    rxrdata      : in   std_logic_vector(31 downto 0);
     --tx ahb fifo
     txrenable    : out  std_ulogic;
     txraddress   : out  std_logic_vector(4 downto 0);
     txwrite      : out  std_ulogic;
     txwdata      : out  std_logic_vector(31 downto 0);
     txwaddress   : out  std_logic_vector(4 downto 0);
-    txrdata      : in   std_logic_vector(31 downto 0);    
+    txrdata      : in   std_logic_vector(31 downto 0);
     --nchar fifo
     ncrenable    : out  std_ulogic;
     ncraddress   : out  std_logic_vector(5 downto 0);
@@ -400,10 +402,10 @@ component grspwc2_net is
   );
 end component;
 
-  component grlfpw_net 
+  component grlfpw_net
   generic (tech     : integer := 0;
            pclow    : integer range 0 to 2 := 2;
-           dsu      : integer range 0 to 1 := 1;           
+           dsu      : integer range 0 to 1 := 1;
            disas    : integer range 0 to 2 := 0;
            pipe     : integer range 0 to 2 := 0
            );
@@ -443,7 +445,7 @@ end component;
     cpi_x_cnt   : in std_logic_vector(1 downto 0);
     cpi_x_trap  : in std_ulogic;
     cpi_x_annul : in std_ulogic;
-    cpi_x_pv    : in std_ulogic;    
+    cpi_x_pv    : in std_ulogic;
     cpi_lddata        : in std_logic_vector(31 downto 0);     -- load data
     cpi_dbg_enable : in std_ulogic;
     cpi_dbg_write  : in std_ulogic;
@@ -458,33 +460,33 @@ end component;
     cpo_holdn         : out std_ulogic;
     cpo_dbg_data     : out std_logic_vector(31 downto 0);
 
-    rfi1_rd1addr 	: out std_logic_vector(3 downto 0); 
-    rfi1_rd2addr 	: out std_logic_vector(3 downto 0); 
-    rfi1_wraddr 	: out std_logic_vector(3 downto 0); 
+    rfi1_rd1addr 	: out std_logic_vector(3 downto 0);
+    rfi1_rd2addr 	: out std_logic_vector(3 downto 0);
+    rfi1_wraddr 	: out std_logic_vector(3 downto 0);
     rfi1_wrdata 	: out std_logic_vector(31 downto 0);
-    rfi1_ren1        : out std_ulogic;			   
-    rfi1_ren2        : out std_ulogic;			   
-    rfi1_wren        : out std_ulogic;			   
-    
-    rfi2_rd1addr 	: out std_logic_vector(3 downto 0); 
-    rfi2_rd2addr 	: out std_logic_vector(3 downto 0); 
-    rfi2_wraddr 	: out std_logic_vector(3 downto 0); 
+    rfi1_ren1        : out std_ulogic;
+    rfi1_ren2        : out std_ulogic;
+    rfi1_wren        : out std_ulogic;
+
+    rfi2_rd1addr 	: out std_logic_vector(3 downto 0);
+    rfi2_rd2addr 	: out std_logic_vector(3 downto 0);
+    rfi2_wraddr 	: out std_logic_vector(3 downto 0);
     rfi2_wrdata 	: out std_logic_vector(31 downto 0);
     rfi2_ren1        : out std_ulogic;
-    rfi2_ren2        : out std_ulogic;			    
+    rfi2_ren2        : out std_ulogic;
     rfi2_wren        : out std_ulogic;
 
     rfo1_data1    	: in std_logic_vector(31 downto 0);
     rfo1_data2    	: in std_logic_vector(31 downto 0);
     rfo2_data1    	: in std_logic_vector(31 downto 0);
-    rfo2_data2    	: in std_logic_vector(31 downto 0)        
+    rfo2_data2    	: in std_logic_vector(31 downto 0)
     );
   end component;
 
-  component grfpw_net 
+  component grfpw_net
   generic (tech     : integer := 0;
            pclow    : integer range 0 to 2 := 2;
-           dsu      : integer range 0 to 2 := 1;           
+           dsu      : integer range 0 to 2 := 1;
            disas    : integer range 0 to 2 := 0;
            pipe     : integer range 0 to 2 := 0
            );
@@ -524,7 +526,7 @@ end component;
     cpi_x_cnt   : in std_logic_vector(1 downto 0);
     cpi_x_trap  : in std_ulogic;
     cpi_x_annul : in std_ulogic;
-    cpi_x_pv    : in std_ulogic;    
+    cpi_x_pv    : in std_ulogic;
     cpi_lddata        : in std_logic_vector(31 downto 0);     -- load data
     cpi_dbg_enable : in std_ulogic;
     cpi_dbg_write  : in std_ulogic;
@@ -539,26 +541,26 @@ end component;
     cpo_holdn         : out std_ulogic;
     cpo_dbg_data     : out std_logic_vector(31 downto 0);
 
-    rfi1_rd1addr 	: out std_logic_vector(3 downto 0); 
-    rfi1_rd2addr 	: out std_logic_vector(3 downto 0); 
-    rfi1_wraddr 	: out std_logic_vector(3 downto 0); 
+    rfi1_rd1addr 	: out std_logic_vector(3 downto 0);
+    rfi1_rd2addr 	: out std_logic_vector(3 downto 0);
+    rfi1_wraddr 	: out std_logic_vector(3 downto 0);
     rfi1_wrdata 	: out std_logic_vector(31 downto 0);
-    rfi1_ren1        : out std_ulogic;			   
-    rfi1_ren2        : out std_ulogic;			   
-    rfi1_wren        : out std_ulogic;			   
-    
-    rfi2_rd1addr 	: out std_logic_vector(3 downto 0); 
-    rfi2_rd2addr 	: out std_logic_vector(3 downto 0); 
-    rfi2_wraddr 	: out std_logic_vector(3 downto 0); 
+    rfi1_ren1        : out std_ulogic;
+    rfi1_ren2        : out std_ulogic;
+    rfi1_wren        : out std_ulogic;
+
+    rfi2_rd1addr 	: out std_logic_vector(3 downto 0);
+    rfi2_rd2addr 	: out std_logic_vector(3 downto 0);
+    rfi2_wraddr 	: out std_logic_vector(3 downto 0);
     rfi2_wrdata 	: out std_logic_vector(31 downto 0);
     rfi2_ren1        : out std_ulogic;
-    rfi2_ren2        : out std_ulogic;			    
+    rfi2_ren2        : out std_ulogic;
     rfi2_wren        : out std_ulogic;
 
     rfo1_data1    	: in std_logic_vector(31 downto 0);
     rfo1_data2    	: in std_logic_vector(31 downto 0);
     rfo2_data1    	: in std_logic_vector(31 downto 0);
-    rfo2_data2    	: in std_logic_vector(31 downto 0)        
+    rfo2_data2    	: in std_logic_vector(31 downto 0)
     );
   end component;
 
@@ -707,6 +709,7 @@ component ftmctrl_net
     pageburst : integer := 0;
     scantest  : integer := 0;
     writefb   : integer := 0;
+    wsshift   : integer := 0;
     tech      : integer := 0
   );
    port (
@@ -924,10 +927,10 @@ end component;
       sdo_ba:           out   Std_Logic_Vector(2 downto 0));            -- bank address
   end component;
 
-  component grlfpw4_net 
+  component grlfpw4_net
   generic (tech     : integer := 0;
            pclow    : integer range 0 to 2 := 2;
-           dsu      : integer range 0 to 1 := 1;           
+           dsu      : integer range 0 to 1 := 1;
            disas    : integer range 0 to 2 := 0;
            pipe     : integer range 0 to 2 := 0;
            wrt      : integer range 0 to 2 := 0
@@ -968,7 +971,7 @@ end component;
     cpi_x_cnt   : in std_logic_vector(1 downto 0);
     cpi_x_trap  : in std_ulogic;
     cpi_x_annul : in std_ulogic;
-    cpi_x_pv    : in std_ulogic;    
+    cpi_x_pv    : in std_ulogic;
     cpi_lddata        : in std_logic_vector(63 downto 0);     -- load data
     cpi_dbg_enable : in std_ulogic;
     cpi_dbg_write  : in std_ulogic;
@@ -983,33 +986,33 @@ end component;
     cpo_holdn         : out std_ulogic;
     cpo_dbg_data     : out std_logic_vector(31 downto 0);
 
-    rfi1_rd1addr 	: out std_logic_vector(3 downto 0); 
-    rfi1_rd2addr 	: out std_logic_vector(3 downto 0); 
-    rfi1_wraddr 	: out std_logic_vector(3 downto 0); 
+    rfi1_rd1addr 	: out std_logic_vector(3 downto 0);
+    rfi1_rd2addr 	: out std_logic_vector(3 downto 0);
+    rfi1_wraddr 	: out std_logic_vector(3 downto 0);
     rfi1_wrdata 	: out std_logic_vector(31 downto 0);
-    rfi1_ren1        : out std_ulogic;			   
-    rfi1_ren2        : out std_ulogic;			   
-    rfi1_wren        : out std_ulogic;			   
-    
-    rfi2_rd1addr 	: out std_logic_vector(3 downto 0); 
-    rfi2_rd2addr 	: out std_logic_vector(3 downto 0); 
-    rfi2_wraddr 	: out std_logic_vector(3 downto 0); 
+    rfi1_ren1        : out std_ulogic;
+    rfi1_ren2        : out std_ulogic;
+    rfi1_wren        : out std_ulogic;
+
+    rfi2_rd1addr 	: out std_logic_vector(3 downto 0);
+    rfi2_rd2addr 	: out std_logic_vector(3 downto 0);
+    rfi2_wraddr 	: out std_logic_vector(3 downto 0);
     rfi2_wrdata 	: out std_logic_vector(31 downto 0);
     rfi2_ren1        : out std_ulogic;
-    rfi2_ren2        : out std_ulogic;			    
+    rfi2_ren2        : out std_ulogic;
     rfi2_wren        : out std_ulogic;
 
     rfo1_data1    	: in std_logic_vector(31 downto 0);
     rfo1_data2    	: in std_logic_vector(31 downto 0);
     rfo2_data1    	: in std_logic_vector(31 downto 0);
-    rfo2_data2    	: in std_logic_vector(31 downto 0)        
+    rfo2_data2    	: in std_logic_vector(31 downto 0)
     );
   end component;
 
-  component grfpw4_net 
+  component grfpw4_net
   generic (tech     : integer := 0;
            pclow    : integer range 0 to 2 := 2;
-           dsu      : integer range 0 to 2 := 1;           
+           dsu      : integer range 0 to 2 := 1;
            disas    : integer range 0 to 2 := 0;
            pipe     : integer range 0 to 2 := 0
            );
@@ -1049,7 +1052,7 @@ end component;
     cpi_x_cnt   : in std_logic_vector(1 downto 0);
     cpi_x_trap  : in std_ulogic;
     cpi_x_annul : in std_ulogic;
-    cpi_x_pv    : in std_ulogic;    
+    cpi_x_pv    : in std_ulogic;
     cpi_lddata        : in std_logic_vector(63 downto 0);     -- load data
     cpi_dbg_enable : in std_ulogic;
     cpi_dbg_write  : in std_ulogic;
@@ -1064,26 +1067,26 @@ end component;
     cpo_holdn         : out std_ulogic;
     cpo_dbg_data     : out std_logic_vector(31 downto 0);
 
-    rfi1_rd1addr 	: out std_logic_vector(3 downto 0); 
-    rfi1_rd2addr 	: out std_logic_vector(3 downto 0); 
-    rfi1_wraddr 	: out std_logic_vector(3 downto 0); 
+    rfi1_rd1addr 	: out std_logic_vector(3 downto 0);
+    rfi1_rd2addr 	: out std_logic_vector(3 downto 0);
+    rfi1_wraddr 	: out std_logic_vector(3 downto 0);
     rfi1_wrdata 	: out std_logic_vector(31 downto 0);
-    rfi1_ren1        : out std_ulogic;			   
-    rfi1_ren2        : out std_ulogic;			   
-    rfi1_wren        : out std_ulogic;			   
-    
-    rfi2_rd1addr 	: out std_logic_vector(3 downto 0); 
-    rfi2_rd2addr 	: out std_logic_vector(3 downto 0); 
-    rfi2_wraddr 	: out std_logic_vector(3 downto 0); 
+    rfi1_ren1        : out std_ulogic;
+    rfi1_ren2        : out std_ulogic;
+    rfi1_wren        : out std_ulogic;
+
+    rfi2_rd1addr 	: out std_logic_vector(3 downto 0);
+    rfi2_rd2addr 	: out std_logic_vector(3 downto 0);
+    rfi2_wraddr 	: out std_logic_vector(3 downto 0);
     rfi2_wrdata 	: out std_logic_vector(31 downto 0);
     rfi2_ren1        : out std_ulogic;
-    rfi2_ren2        : out std_ulogic;			    
+    rfi2_ren2        : out std_ulogic;
     rfi2_wren        : out std_ulogic;
 
     rfo1_data1    	: in std_logic_vector(31 downto 0);
     rfo1_data2    	: in std_logic_vector(31 downto 0);
     rfo2_data1    	: in std_logic_vector(31 downto 0);
-    rfo2_data2    	: in std_logic_vector(31 downto 0)        
+    rfo2_data2    	: in std_logic_vector(31 downto 0)
     );
   end component;
 
@@ -1102,7 +1105,7 @@ end component;
       maxwlen   : integer range 0 to 15 := 0);
     port (
       rstn          : in std_ulogic;
-      clk           : in std_ulogic; 
+      clk           : in std_ulogic;
       apbi_psel     : in  std_ulogic;
       apbi_penable  : in  std_ulogic;
       apbi_paddr    : in  std_logic_vector(31 downto 0);
@@ -1253,7 +1256,7 @@ end component;
     );
     port(
       pciclk  : in  std_logic;
-  
+
       pcii_rst                  : in  std_ulogic;
       pcii_gnt                  : in  std_ulogic;
       pcii_idsel                : in  std_ulogic;
@@ -1272,14 +1275,15 @@ end component;
       pcii_pci66                : in  std_ulogic;
       pcii_pme_status           : in  std_ulogic;
       pcii_int                  : in  std_logic_vector(3 downto 0);
-      
+
       phyi_pcirstout            : in  std_logic;
       phyi_pciasyncrst          : in  std_logic;
-      phyi_pciinten             : in  std_logic;
+      phyi_pcisoftrst           : in  std_logic_vector(2 downto 0);
+      phyi_pciinten             : in  std_logic_vector(3 downto 0);
       phyi_m_request            : in  std_logic;
       phyi_m_mabort             : in  std_logic;
       phyi_pr_m_fstate          : in  std_logic_vector(1 downto 0);
-      
+
       phyi_pr_m_cfifo_0_data    : in  std_logic_vector(31 downto 0);
       phyi_pr_m_cfifo_0_last    : in  std_logic;
       phyi_pr_m_cfifo_0_stlast  : in  std_logic;
@@ -1298,7 +1302,7 @@ end component;
       phyi_pr_m_cfifo_2_hold    : in  std_logic;
       phyi_pr_m_cfifo_2_valid   : in  std_logic;
       phyi_pr_m_cfifo_2_err     : in  std_logic;
-    
+
       phyi_pv_m_cfifo_0_data    : in  std_logic_vector(31 downto 0);
       phyi_pv_m_cfifo_0_last    : in  std_logic;
       phyi_pv_m_cfifo_0_stlast  : in  std_logic;
@@ -1317,7 +1321,7 @@ end component;
       phyi_pv_m_cfifo_2_hold    : in  std_logic;
       phyi_pv_m_cfifo_2_valid   : in  std_logic;
       phyi_pv_m_cfifo_2_err     : in  std_logic;
-      
+
       phyi_pr_m_addr            : in  std_logic_vector(31 downto 0);
       phyi_pr_m_cbe_data        : in  std_logic_vector(3 downto 0);
       phyi_pr_m_cbe_cmd         : in  std_logic_vector(3 downto 0);
@@ -1328,14 +1332,14 @@ end component;
       phyi_pr_m_abort           : in  std_logic_vector(0 downto 0);
       phyi_pr_m_perren          : in  std_logic_vector(0 downto 0);
       phyi_pr_m_done_fifo       : in  std_logic;
-      
+
       phyi_t_abort              : in  std_logic;
       phyi_t_ready              : in  std_logic;
       phyi_t_retry              : in  std_logic;
       phyi_pr_t_state           : in  std_logic_vector(2 downto 0);
       phyi_pv_t_state           : in  std_logic_vector(2 downto 0);
       phyi_pr_t_fstate          : in  std_logic_vector(1 downto 0);
-  
+
       phyi_pr_t_cfifo_0_data    : in  std_logic_vector(31 downto 0);
       phyi_pr_t_cfifo_0_last    : in  std_logic;
       phyi_pr_t_cfifo_0_stlast  : in  std_logic;
@@ -1363,7 +1367,7 @@ end component;
       phyi_pv_t_hold_reset      : in  std_logic;
       phyi_pr_conf_comm_perren  : in  std_logic;
       phyi_pr_conf_comm_serren  : in  std_logic;
-      
+
       pcio_aden                 : out std_ulogic;
       pcio_vaden                : out std_logic_vector(31 downto 0);
       pcio_cbeen                : out std_logic_vector(3 downto 0);
@@ -1379,6 +1383,7 @@ end component;
       pcio_locken               : out std_ulogic;
       pcio_serren               : out std_ulogic;
       pcio_inten                : out std_ulogic;
+      pcio_vinten               : out std_logic_vector(3 downto 0);
       pcio_req                  : out std_ulogic;
       pcio_ad                   : out std_logic_vector(31 downto 0);
       pcio_cbe                  : out std_logic_vector(3 downto 0);
@@ -1396,7 +1401,7 @@ end component;
       pcio_pme_clear            : out std_ulogic;
       pcio_int                  : out std_ulogic;
       pcio_rst                  : out std_ulogic;
-      
+
       phyo_pciv_rst             : out std_ulogic;
       phyo_pciv_gnt             : out std_ulogic;
       phyo_pciv_idsel           : out std_ulogic;
@@ -1415,7 +1420,7 @@ end component;
       phyo_pciv_pci66           : out std_ulogic;
       phyo_pciv_pme_status      : out std_ulogic;
       phyo_pciv_int             : out std_logic_vector(3 downto 0);
-  
+
       phyo_pr_m_state           : out std_logic_vector(2 downto 0);
       phyo_pr_m_last            : out std_logic_vector(1 downto 0);
       phyo_pr_m_hold            : out std_logic_vector(1 downto 0);
@@ -1426,11 +1431,11 @@ end component;
       phyo_pr_t_diswithout      : out std_logic;
       phyo_pr_t_addr_perr       : out std_logic;
       phyo_pcirsto              : out std_logic_vector(0 downto 0);
-      
+
       phyo_pr_po_ad             : out std_logic_vector(31 downto 0);
       phyo_pr_po_aden           : out std_logic_vector(31 downto 0);
-      phyo_pr_po_cbe            : out std_logic_vector(3 downto 0); 
-      phyo_pr_po_cbeen          : out std_logic_vector(3 downto 0); 
+      phyo_pr_po_cbe            : out std_logic_vector(3 downto 0);
+      phyo_pr_po_cbeen          : out std_logic_vector(3 downto 0);
       phyo_pr_po_frame          : out std_logic;
       phyo_pr_po_frameen        : out std_logic;
       phyo_pr_po_irdy           : out std_logic;
@@ -1451,7 +1456,7 @@ end component;
       phyo_pr_po_reqen          : out std_logic;
       phyo_pr_po_serren         : out std_logic;
       phyo_pr_po_inten          : out std_logic;
-  
+
       phyo_pio_rst              : out std_ulogic;
       phyo_pio_gnt              : out std_ulogic;
       phyo_pio_idsel            : out std_ulogic;
@@ -1470,11 +1475,11 @@ end component;
       phyo_pio_pci66            : out std_ulogic;
       phyo_pio_pme_status       : out std_ulogic;
       phyo_pio_int              : out std_logic_vector(3 downto 0);
-  
+
       phyo_poo_ad               : out std_logic_vector(31 downto 0);
       phyo_poo_aden             : out std_logic_vector(31 downto 0);
-      phyo_poo_cbe              : out std_logic_vector(3 downto 0); 
-      phyo_poo_cbeen            : out std_logic_vector(3 downto 0); 
+      phyo_poo_cbe              : out std_logic_vector(3 downto 0);
+      phyo_poo_cbeen            : out std_logic_vector(3 downto 0);
       phyo_poo_frame            : out std_logic;
       phyo_poo_frameen          : out std_logic;
       phyo_poo_irdy             : out std_logic;

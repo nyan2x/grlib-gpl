@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -86,6 +86,7 @@ entity grspwc_net is
     timerrstval  : in   std_logic_vector(11 downto 0);
     --rmapen
     rmapen       : in   std_ulogic;
+    rmapnodeaddr : in   std_logic_vector(7 downto 0);
     --clk bufs
     rxclki       : in std_logic_vector(1 downto 0);
     nrxclki      : in std_logic_vector(1 downto 0);
@@ -184,6 +185,7 @@ component grspwc_unisim
     timerrstval  : in   std_logic_vector(11 downto 0);
     --rmapen
     rmapen       : in   std_ulogic;
+    rmapnodeaddr : in   std_logic_vector(7 downto 0);
     --clk bufs
     rxclki       : in std_logic_vector(1 downto 0);
     nrxclki      : in std_logic_vector(1 downto 0);
@@ -280,6 +282,7 @@ component grspwc_axcelerator
     timerrstval  : in   std_logic_vector(11 downto 0);
     --rmapen
     rmapen       : in   std_ulogic;
+    rmapnodeaddr : in   std_logic_vector(7 downto 0);
     --clk bufs
     rxclki : in std_logic_vector(1 downto 0);
     nrxclki : in std_logic_vector(1 downto 0);
@@ -376,6 +379,7 @@ component grspwc_proasic3
     timerrstval  : in   std_logic_vector(11 downto 0);
     --rmapen
     rmapen       : in   std_ulogic;
+    rmapnodeaddr : in   std_logic_vector(7 downto 0);
     --clk bufs
     rxclki : in std_logic_vector(1 downto 0);
     nrxclki : in std_logic_vector(1 downto 0);
@@ -472,6 +476,7 @@ component grspwc_proasic3e
     timerrstval  : in   std_logic_vector(11 downto 0);
     --rmapen
     rmapen       : in   std_ulogic;
+    rmapnodeaddr : in   std_logic_vector(7 downto 0);
     --clk bufs
     rxclki : in std_logic_vector(1 downto 0);
     nrxclki : in std_logic_vector(1 downto 0);
@@ -568,6 +573,7 @@ component grspwc_proasic3l
     timerrstval  : in   std_logic_vector(11 downto 0);
     --rmapen
     rmapen       : in   std_ulogic;
+    rmapnodeaddr : in   std_logic_vector(7 downto 0);
     --clk bufs
     rxclki : in std_logic_vector(1 downto 0);
     nrxclki : in std_logic_vector(1 downto 0);
@@ -661,6 +667,7 @@ begin
       timerrstval  => timerrstval,
       --rmapen
       rmapen       => rmapen,
+      rmapnodeaddr => rmapnodeaddr,
       --rx ahb fifo
       rxrenable    => rxrenable,
       rxraddress   => rxraddress,
@@ -748,6 +755,7 @@ begin
       timerrstval  => timerrstval,
       --rmapen
       rmapen       => rmapen,
+      rmapnodeaddr => rmapnodeaddr,
       --rx ahb fifo
       rxrenable    => rxrenable,
       rxraddress   => rxraddress,
@@ -835,6 +843,7 @@ begin
       timerrstval  => timerrstval,
       --rmapen
       rmapen       => rmapen,
+      rmapnodeaddr => rmapnodeaddr,
       --rx ahb fifo
       rxrenable    => rxrenable,
       rxraddress   => rxraddress,
@@ -853,12 +862,12 @@ begin
       ncrenable    => ncrenable,
       ncraddress   => ncraddress,
       ncwrite      => ncwrite,
-      ncwdata      => ncwdata, 
+      ncwdata      => ncwdata,
       ncwaddress   => ncwaddress,
-      ncrdata      => ncrdata,  
+      ncrdata      => ncrdata,
       --rmap buf
       rmrenable    => rmrenable,
-      rmraddress   => rmraddress, 
+      rmraddress   => rmraddress,
       rmwrite      => rmwrite,
       rmwdata      => rmwdata,
       rmwaddress   => rmwaddress,
@@ -922,6 +931,7 @@ begin
       timerrstval  => timerrstval,
       --rmapen
       rmapen       => rmapen,
+      rmapnodeaddr => rmapnodeaddr,
       --rx ahb fifo
       rxrenable    => rxrenable,
       rxraddress   => rxraddress,
@@ -940,12 +950,12 @@ begin
       ncrenable    => ncrenable,
       ncraddress   => ncraddress,
       ncwrite      => ncwrite,
-      ncwdata      => ncwdata, 
+      ncwdata      => ncwdata,
       ncwaddress   => ncwaddress,
-      ncrdata      => ncrdata,  
+      ncrdata      => ncrdata,
       --rmap buf
       rmrenable    => rmrenable,
-      rmraddress   => rmraddress, 
+      rmraddress   => rmraddress,
       rmwrite      => rmwrite,
       rmwdata      => rmwdata,
       rmwaddress   => rmwaddress,
@@ -1009,6 +1019,7 @@ begin
       timerrstval  => timerrstval,
       --rmapen
       rmapen       => rmapen,
+      rmapnodeaddr => rmapnodeaddr,
       --rx ahb fifo
       rxrenable    => rxrenable,
       rxraddress   => rxraddress,
@@ -1027,12 +1038,12 @@ begin
       ncrenable    => ncrenable,
       ncraddress   => ncraddress,
       ncwrite      => ncwrite,
-      ncwdata      => ncwdata, 
+      ncwdata      => ncwdata,
       ncwaddress   => ncwaddress,
-      ncrdata      => ncrdata,  
+      ncrdata      => ncrdata,
       --rmap buf
       rmrenable    => rmrenable,
-      rmraddress   => rmraddress, 
+      rmraddress   => rmraddress,
       rmwrite      => rmwrite,
       rmwdata      => rmwdata,
       rmwaddress   => rmwaddress,
@@ -1045,7 +1056,7 @@ begin
   end generate;
 
 -- pragma translate_off
-  nonet : if not ((is_unisim(tech) = 1) or (tech = axcel) or 
+  nonet : if not ((is_unisim(tech) = 1) or (tech = axcel) or
 	(tech = axdsp) or (tech = apa3)) generate
     err : process
     begin

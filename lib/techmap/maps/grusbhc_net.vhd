@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -52,7 +52,8 @@ entity grusbhc_net is
     memtech     : integer range 0 to NTECH := DEFMEMTECH;
     memsel      : integer                  := 0;
     syncprst    : integer range 0 to 1     := 0;
-    sysfreq     : integer                  := 65000);
+    sysfreq     : integer                  := 65000;
+    pcidev      : integer range 0 to 1     := 0);
   port (
     clk               : in  std_ulogic;
     uclk              : in  std_ulogic;
@@ -215,7 +216,8 @@ architecture rtl of grusbhc_net is
       memtech     : integer range 0 to NTECH := DEFMEMTECH;
       memsel      : integer                  := 0;
       syncprst    : integer range 0 to 1     := 0;
-      sysfreq     : integer                  := 65000);
+      sysfreq     : integer                  := 65000;
+      pcidev      : integer range 0 to 1     := 0);
     port (
       clk               : in  std_ulogic;
       uclk              : in  std_ulogic;
@@ -376,7 +378,8 @@ architecture rtl of grusbhc_net is
       memtech     : integer range 0 to NTECH := DEFMEMTECH;
       memsel      : integer                  := 0;
       syncprst    : integer range 0 to 1     := 0;
-      sysfreq     : integer                  := 65000);
+      sysfreq     : integer                  := 65000;
+      pcidev      : integer range 0 to 1     := 0);
     port (
       clk               : in  std_ulogic;
       uclk              : in  std_ulogic;
@@ -537,7 +540,8 @@ architecture rtl of grusbhc_net is
       memtech     : integer range 0 to NTECH := DEFMEMTECH;
       memsel      : integer                  := 0;
       syncprst    : integer range 0 to 1     := 0;
-      sysfreq     : integer                  := 65000);
+      sysfreq     : integer                  := 65000;
+      pcidev      : integer range 0 to 1     := 0);
     port (
       clk               : in  std_ulogic;
       uclk              : in  std_ulogic;
@@ -698,7 +702,8 @@ architecture rtl of grusbhc_net is
       memtech     : integer range 0 to NTECH := DEFMEMTECH;
       memsel      : integer                  := 0;
       syncprst    : integer range 0 to 1     := 0;
-      sysfreq     : integer                  := 65000);
+      sysfreq     : integer                  := 65000;
+      pcidev      : integer range 0 to 1     := 0);
     port (
       clk               : in  std_ulogic;
       uclk              : in  std_ulogic;
@@ -863,7 +868,8 @@ begin
         memtech     => memtech,
         memsel      => memsel,
         syncprst    => syncprst,
-        sysfreq     => sysfreq)
+        sysfreq     => sysfreq,
+        pcidev      => pcidev)
       port map(
         clk               => clk,
         uclk              => uclk,
@@ -1026,7 +1032,8 @@ begin
         memtech     => memtech,
         memsel      => memsel,
         syncprst    => syncprst,
-        sysfreq     => sysfreq)
+        sysfreq     => sysfreq,
+        pcidev      => pcidev)
       port map(
         clk               => clk,
         uclk              => uclk,
@@ -1188,7 +1195,8 @@ begin
         memtech     => memtech,
         memsel      => memsel,
         syncprst    => syncprst,
-        sysfreq     => sysfreq)
+        sysfreq     => sysfreq,
+        pcidev      => pcidev)
       port map(
         clk               => clk,
         uclk              => uclk,
@@ -1350,7 +1358,8 @@ begin
         memtech     => memtech,
         memsel      => memsel,
         syncprst    => syncprst,
-        sysfreq     => sysfreq)
+        sysfreq     => sysfreq,
+        pcidev      => pcidev)
       port map(
         clk               => clk,
         uclk              => uclk,

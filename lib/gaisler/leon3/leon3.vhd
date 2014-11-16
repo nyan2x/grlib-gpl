@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ package leon3 is
     rstvec	: std_logic_vector(31 downto 12);
     iact        : std_ulogic;
     index 	: std_logic_vector(3 downto 0);
+    hrdrst      : std_ulogic;
   end record;
 
   type l3_irq_out_type is record
@@ -49,6 +50,7 @@ package leon3 is
     irl		: std_logic_vector(3 downto 0);
     pwd         : std_ulogic;
     fpen        : std_ulogic;
+    idle        : std_ulogic;
   end record;
 
   type l3_debug_in_type is record
@@ -396,75 +398,6 @@ package leon3 is
   );
   end component;
 
-    -- GRFPU interface
-
-  type fp_rf_in_type is record
-    rd1addr 	: std_logic_vector(3 downto 0); -- read address 1
-    rd2addr 	: std_logic_vector(3 downto 0); -- read address 2
-    wraddr 	: std_logic_vector(3 downto 0); -- write address
-    wrdata 	: std_logic_vector(31 downto 0);     -- write data
-    ren1        : std_ulogic;			     -- read 1 enable
-    ren2        : std_ulogic;			     -- read 2 enable
-    wren        : std_ulogic;			     -- write enable
-  end record;
- 
-  type fp_rf_out_type is record
-    data1    	: std_logic_vector(31 downto 0); -- read data 1
-    data2    	: std_logic_vector(31 downto 0); -- read data 2
-  end record;  
-
-  type fpc_pipeline_control_type is record
-    pc    : std_logic_vector(31 downto 0);
-    inst  : std_logic_vector(31 downto 0);
-    cnt   : std_logic_vector(1 downto 0);
-    trap  : std_ulogic;
-    annul : std_ulogic;
-    pv    : std_ulogic;
-  end record;  
-
-  type fpc_debug_in_type is record
-    enable : std_ulogic;
-    write  : std_ulogic;
-    fsr    : std_ulogic;                            -- FSR access
-    addr   : std_logic_vector(4 downto 0);
-    data   : std_logic_vector(31 downto 0);
-  end record;
-
-  type fpc_debug_out_type is record
-    data   : std_logic_vector(31 downto 0);
-    wdata  : std_logic_vector(63 downto 0);
-    wren   : std_logic_vector(1 downto 0);
-    rd     : std_logic_vector(3 downto 0);
-  end record;  
-
-  constant fpc_debug_none : fpc_debug_out_type := 
-	(data => X"00000000", wdata => X"0000000000000000", wren => "00", rd => "0000");
-
-  type fpc_in_type is record
-    flush  	: std_ulogic;			  -- pipeline flush
-    exack    	: std_ulogic;			  -- FP exception acknowledge
-    a_rs1  	: std_logic_vector(4 downto 0);
-    d             : fpc_pipeline_control_type;
-    a             : fpc_pipeline_control_type;
-    e             : fpc_pipeline_control_type;
-    m             : fpc_pipeline_control_type;
-    x             : fpc_pipeline_control_type;    
-    lddata        : std_logic_vector(31 downto 0);     -- load data
-    dbg           : fpc_debug_in_type;               -- debug signals
-  end record;
-
-  type fpc_out_type is record
-    data          : std_logic_vector(31 downto 0); -- store data
-    exc  	        : std_logic;			 -- FP exception
-    cc            : std_logic_vector(1 downto 0);  -- FP condition codes
-    ccv  	        : std_ulogic;			 -- FP condition codes valid
-    ldlock        : std_logic;			 -- FP pipeline hold
-    holdn          : std_ulogic;
-    dbg           : fpc_debug_out_type;             -- FP debug signals    
-  end record;
-  
-  constant fpc_out_none : fpc_out_type := (X"00000000", '0', "00", '1', '0', '1', fpc_debug_none); 
-
   type grfpu_in_type is record
     start   : std_logic;
     nonstd  : std_logic;
@@ -502,29 +435,13 @@ package leon3 is
   component grfpushwx 
   generic (mul    : integer              := 0;
            nshare : integer range 0 to 8 := 0;
-           tech   : integer);
+           tech   : integer;
+           arb    : integer range 0 to 2 := 1);
   port(
     clk     : in  std_logic;
     reset   : in  std_logic;
     fpvi    : in  grfpu_in_vector_type;
     fpvo    : out grfpu_out_vector_type    
-    );
-  end component;
-  
-  component grfpwxsh
-  generic (tech     : integer range 0 to NTECH := 0;
-           pclow    : integer range 0 to 2 := 2;
-           dsu      : integer range 0 to 1 := 0;           
-           disas    : integer range 0 to 2 := 0;
-           id       : integer range 0 to 7 := 0);
-  port (
-    rst    : in  std_ulogic;			-- Reset
-    clk    : in  std_ulogic;
-    holdn  : in  std_ulogic;			-- pipeline hold
-    cpi    : in  fpc_in_type;
-    cpo    : out fpc_out_type;
-    fpui   : out grfpu_in_type;
-    fpuo   : in  grfpu_out_type
     );
   end component;
   
@@ -831,6 +748,37 @@ package leon3 is
     cpurun : in  std_logic_vector(ncpu-1 downto 0) := (others => '0')
   );
   end component; 
+
+  component irqamp2x
+  generic (
+    pindex     : integer := 0;
+    paddr      : integer := 0;
+    pmask      : integer := 16#fff#;
+    ncpu       : integer := 1;
+    eirq       : integer := 0;
+    nctrl      : integer range 1 to 16 := 1;
+    tstamp     : integer range 0 to 16 := 0;
+    wdogen     : integer range 0 to 1 := 0;
+    nwdog      : integer range 1 to 16 := 1;
+    dynrstaddr : integer range 0 to 1 := 0;
+    rstaddr    : integer range 0 to 16#fffff# := 0;
+    extrun     : integer range 0 to 1 := 0;
+    clkfact    : integer := 2
+  );
+  port (
+    rst    : in  std_ulogic;
+    hclk   : in  std_ulogic;
+    cpuclk : in  std_ulogic;
+    apbi   : in  apb_slv_in_type;
+    apbo   : out apb_slv_out_type;
+    irqi   : in  irq_out_vector(0 to ncpu-1);
+    irqo   : out irq_in_vector(0 to ncpu-1);
+    wdog   : in  std_logic_vector(nwdog-1 downto 0) := (others => '0');
+    cpurun : in  std_logic_vector(ncpu-1 downto 0) := (others => '0');
+    hclken : in  std_ulogic
+  );
+  end component;
+
   
 component leon3ftsh
   generic (
@@ -839,7 +787,7 @@ component leon3ftsh
     memtech   : integer range 0 to NTECH  := DEFMEMTECH;
     nwindows  : integer range 2 to 32 := 8;
     dsu       : integer range 0 to 1  := 0;
-    fpu       : integer range 0 to 31 := 0;
+    fpu       : integer range 0 to 63 := 0;
     v8        : integer range 0 to 63 := 0;
     cp        : integer range 0 to 1  := 0;
     mac       : integer range 0 to 1  := 0;

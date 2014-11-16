@@ -64,8 +64,8 @@ comment 'Peripherals             '
 
   mainmenu_option next_comment
   comment 'I2C and SPI '
-    source lib/gaisler/misc/i2c.in
-    source lib/gaisler/misc/spictrl.in
+    source lib/gaisler/i2c/i2c.in
+    source lib/gaisler/spi/spictrl.in
   endmenu
 
   mainmenu_option next_comment

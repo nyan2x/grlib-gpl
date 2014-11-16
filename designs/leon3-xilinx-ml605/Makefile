@@ -9,7 +9,7 @@ UCF=$(TOP).ucf
 #ISEMAPOPT=-timing
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=high
-XSTOPT="-uc leon3mp.xcf"
+XSTOPT=-uc leon3mp.xcf
 SYNPOPT="set_option -pipe 1; set_option -retiming 0; set_option -enable_prepacking 1;\
 set_option -write_apr_constraint 0;set_option -resource_sharing 1; set_option -symbolic_fsm_compiler 1"
 VHDLOPTSYNFILES= \
@@ -77,7 +77,7 @@ TECHLIBS = secureip unisim
 LIBSKIP = core1553bbc core1553brm core1553brt gr1553 corePCIF \
 	tmtc openchip ihp gleichmann usbhc spw gsi cypress hynix \
 	spansion
-DIRSKIP = b1553 pcif leon2 leon2ft crypto satcan pci leon3ft ambatest can \
+DIRSKIP = b1553 pcif leon2 leon2ft crypto satcan pci ambatest can \
 	usb grusbhc spacewire ata haps coremp7 ascs slink spi hcan \
 	leon4 leon4b64 l2cache pwm gr1553b iommu ac97
 FILESKIP = grcan.vhd ddr2.v mobile_ddr.v

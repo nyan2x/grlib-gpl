@@ -6,7 +6,7 @@
 #
 # Clocks
 #
-#define_clock -name   {clk}  -freq 35.000 -clockgroup default_clkgroup
+define_clock -name   {clk}  -freq 35.000 -clockgroup default_clkgroup
 
 #define_clock -name   {clkgen0.clkm_inferred_clock}  -freq 60.000 -clockgroup clkmgroup
 define_clock -name   {clkgen0.ddrclk0_inferred_clock}  -freq 120.000 -clockgroup ddrclkgroup

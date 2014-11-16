@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ use grlib.amba.all;
 use grlib.devices.all;
 library gaisler;
 use gaisler.memctrl.all;
+use gaisler.ddrpkg.all;
 
 entity ddr2spax_ddr is
    generic (
@@ -42,7 +43,6 @@ entity ddr2spax_ddr is
       TRFC       : integer := 130;
       col        : integer := 9;
       Mbyte      : integer := 8;
-      fastahb    : integer := 0;
       pwron      : integer := 0;
       oepol      : integer := 0;
       readdly    : integer := 1;
@@ -59,14 +59,15 @@ entity ddr2spax_ddr is
       raspipe    : integer range 0 to 1 := 0;
       hwidthen   : integer range 0 to 1 := 0;
       phytech    : integer := 0;
-      hasdqvalid : integer := 0
+      hasdqvalid : integer := 0;
+      rstdel     : integer := 200
    );
    port (
       ddr_rst  : in  std_ulogic;
       clk_ddr  : in  std_ulogic;
       request  : in  ddr_request_type;
       start_tog: in  std_logic;
-      done_tog : out std_logic;
+      response : out ddr_response_type;
       sdi      : in  sdctrl_in_type;
       sdo      : out sdctrl_out_type;
       wbraddr  : out std_logic_vector(log2((16*burstlen)/ddrbits) downto 0);
@@ -77,7 +78,7 @@ entity ddr2spax_ddr is
       hwidth   : in std_ulogic;
       reqsel   : in std_ulogic;
       frequest : in  ddr_request_type;
-      done_tog2: out std_logic
+      response2: out ddr_response_type
    );  
 end ddr2spax_ddr;
 
@@ -142,21 +143,22 @@ architecture rtl of ddr2spax_ddr is
     tras       : std_logic_vector(4 downto 0);  -- RAS-to-Precharge minimum
     trtp       : std_ulogic;
     regmem     : std_ulogic;            -- Registered memory (1 cycle extra latency)
+    strength   : std_ulogic;            -- Drive strength 1=reduced, 0=normal
   end record;
 
   constant ddr_burstlen: integer := (burstlen*32)/(2*ddrbits);
   constant l2ddr_burstlen: integer := l2blen-l2ddrw;
   
   type ddrstate is (dsidle,dsrascas,dscaslat,dsreaddly,dsdata,dsdone,dsagain,dsreg,dsrefresh,dspreall);
-  type ddrcmdstate is (dcoff,dcinit1,dcinit2,dcinit3,dcinit4,dcinit5,dcinit6,dcinit7,dcinit8,dcon);
+  type ddrcmdstate is (dcrstdel,dcoff,dcinit1,dcinit2,dcinit3,dcinit4,dcinit5,dcinit6,dcinit7,dcinit8,dcon);
   
   type ddr_reg_type is record
     s             : ddrstate;
     cmds          : ddrcmdstate;
-    done_tog      : std_logic;
-    done_tog1     : std_logic;
-    done_tog2     : std_logic;
-    done_tog_prev : std_logic;
+    response      : ddr_response_type;
+    response1     : ddr_response_type;
+    response2     : ddr_response_type;
+    response_prev : ddr_response_type;
     cfg           : sdram_cfg_type;
     rowsel        : std_logic_vector(2 downto 0);
     endaddr       : std_logic_vector(l2blen-4 downto 2);
@@ -171,7 +173,7 @@ architecture rtl of ddr2spax_ddr is
     rastimer      : std_logic_vector(4 downto 0);
     tras_met      : std_logic;
     pchpend       : std_logic;
-    refctr        : std_logic_vector(11 downto 0);
+    refctr        : std_logic_vector(16 downto 0);
     refpend       : std_logic;
     pastlast      : std_logic;
     sdo_csn       : std_logic_vector(1 downto 0);
@@ -245,7 +247,7 @@ begin
     muxout4(0) <= genmux((muxsel2 & muxsel1 & muxsel0),muxin4(7 downto 0));
   end process;
   
-  ddrcomb : process(ddr_rst,sdi,request,frequest,start_tog_delta2,dr,wbrdata,muxout4,hwidth)
+  ddrcomb : process(ddr_rst,sdi,request,frequest,start_tog_delta2,dr,wbrdata,muxout4,hwidth,reqsel)
     constant plmemwrite: boolean := false;
     constant plmemread: boolean := false;
     
@@ -253,6 +255,7 @@ begin
     variable o: sdctrl_out_type;
     variable bdrive,qdrive: std_logic;
     variable vreq,vreqf: ddr_request_type;
+    variable resp,resp2: ddr_response_type;
     variable vstart: std_logic;
     variable acsn: std_logic_vector(1 downto 0);
     variable arow: std_logic_vector(14 downto 0);
@@ -282,6 +285,11 @@ begin
     variable addrtemp3,addrtemp2,addrtemp1,addrtemp0: std_logic_vector(7 downto 0);
     variable expcsize: std_logic_vector(2 downto 0);
     variable caslat_reg: std_logic_vector(2 downto 0);
+    variable addrlo32, endaddr32: std_logic_vector(3 downto 2);
+    variable endaddr43: std_logic_vector(4 downto 3);
+    variable endaddr42: std_logic_vector(4 downto 2);
+    variable inc_rctr: std_logic;
+    
   begin
     
     
@@ -308,17 +316,20 @@ begin
     o.cb        := dr.sdo_cb;
     o.cbcal_en  := dr.cfg.cbcal_en;
     o.cbcal_inc := dr.cfg.cbcal_inc;
+
+    resp := ddr_response_none;
+    resp2 := ddr_response_none;
     
     rbw  := dr.rbwrite;
     rbwd := dr.rbwdata;
     rbwa := (others => '0');
     w5 := '0';
-    wbra := dr.done_tog & dr.ramaddr;
+    wbra := dr.response.done_tog & dr.ramaddr;
 
     dv.ramaddr_prev := dr.ramaddr;
     dv.dqm_prev := dr.sdo_dqm;
     dv.wen_prev := dr.sdo_wen;
-    dv.done_tog_prev := dr.done_tog;
+    dv.response_prev := dr.response;
     dv.sdo_address_prev := dr.sdo_address;
     
     dv.cfg.cal_en := (others => '0');
@@ -345,33 +356,37 @@ begin
       end if;
     end if;
 
-    dv.rbwdata(2*ddrbits+chkbits-1 downto ddrbits+chkbits) := sdi.data(2*ddrbits-1 downto ddrbits);
-    dv.rbwdata(ddrbits-1 downto 0) := sdi.data(ddrbits-1 downto 0);
-    if chkbits > 0 then
-      dv.rbwdata(2*ddrbits+2*chkbits-1 downto 2*ddrbits+chkbits) := sdi.cb(2*chkbits-1 downto chkbits);
-      dv.rbwdata(ddrbits+chkbits-1 downto ddrbits) := sdi.cb(chkbits-1 downto 0);
-    end if;
+    if not (hwidthen/=0 and hasdqvalid/=0 and sdi.datavalid='0') then
 
-    -- Half-width input data muxing
-    if hwidthen/=0 and dr.hwidth='1' and dr.hwctr='1' then      
-      dv.rbwdata(2*ddrbits+chkbits-1 downto 2*ddrbits+chkbits-ddrbits/2) :=
-        dr.rbwdata(2*ddrbits+chkbits-ddrbits/2-1 downto ddrbits+chkbits);      
-      dv.rbwdata(2*ddrbits+chkbits-ddrbits/2-1 downto ddrbits+chkbits) :=
-        dr.rbwdata(ddrbits/2-1 downto 0);      
-      dv.rbwdata(ddrbits-1 downto ddrbits/2) :=
-        sdi.data(ddrbits+ddrbits/2-1 downto ddrbits);
-
+      dv.rbwdata(2*ddrbits+chkbits-1 downto ddrbits+chkbits) := sdi.data(2*ddrbits-1 downto ddrbits);
+      dv.rbwdata(ddrbits-1 downto 0) := sdi.data(ddrbits-1 downto 0);
       if chkbits > 0 then
-        dv.rbwdata(2*ddrbits+2*chkbits-1 downto 2*ddrbits+2*chkbits-chkbits/2) :=
-          dr.rbwdata(2*ddrbits+2*chkbits-chkbits/2-1 downto 2*ddrbits+chkbits);
-        dv.rbwdata(2*ddrbits+2*chkbits-chkbits/2-1 downto 2*ddrbits+chkbits) :=
-          dr.rbwdata(ddrbits+chkbits/2-1 downto ddrbits);
-        dv.rbwdata(ddrbits+chkbits-1 downto ddrbits+chkbits/2) :=
-          sdi.cb(chkbits+chkbits/2-1 downto chkbits);
+        dv.rbwdata(2*ddrbits+2*chkbits-1 downto 2*ddrbits+chkbits) := sdi.cb(2*chkbits-1 downto chkbits);
+        dv.rbwdata(ddrbits+chkbits-1 downto ddrbits) := sdi.cb(chkbits-1 downto 0);
+      end if;
+      
+      -- Half-width input data muxing
+      if hwidthen/=0 and dr.hwidth='1' and dr.hwctr='1' then      
+        dv.rbwdata(2*ddrbits+chkbits-1 downto 2*ddrbits+chkbits-ddrbits/2) :=
+          dr.rbwdata(2*ddrbits+chkbits-ddrbits/2-1 downto ddrbits+chkbits);      
+        dv.rbwdata(2*ddrbits+chkbits-ddrbits/2-1 downto ddrbits+chkbits) :=
+          dr.rbwdata(ddrbits/2-1 downto 0);      
+        dv.rbwdata(ddrbits-1 downto ddrbits/2) :=
+          sdi.data(ddrbits+ddrbits/2-1 downto ddrbits);
+        
+        if chkbits > 0 then
+          dv.rbwdata(2*ddrbits+2*chkbits-1 downto 2*ddrbits+2*chkbits-chkbits/2) :=
+            dr.rbwdata(2*ddrbits+2*chkbits-chkbits/2-1 downto 2*ddrbits+chkbits);
+          dv.rbwdata(2*ddrbits+2*chkbits-chkbits/2-1 downto 2*ddrbits+chkbits) :=
+            dr.rbwdata(ddrbits+chkbits/2-1 downto ddrbits);
+          dv.rbwdata(ddrbits+chkbits-1 downto ddrbits+chkbits/2) :=
+            sdi.cb(chkbits+chkbits/2-1 downto chkbits);
+        end if;
+        
       end if;
       
     end if;
-
+    
     -- hwidth input should be constant but sample it for robustness
     -- then sample in one more stage to allow replication if necessary
     dv.hwidth1 := hwidth;
@@ -417,6 +432,7 @@ begin
     regsd5(30 downto 28) := dr.cfg.trp;
     regsd5(25 downto 18) := dr.cfg.trfc;
     regsd5(17 downto 16) := dr.cfg.odten;
+    regsd5(15)           := dr.cfg.strength;
     regsd5(10 downto 8)  := dr.cfg.trcd;
     regsd5(4 downto 0)   := dr.cfg.tras;
 
@@ -526,6 +542,13 @@ begin
     end if;
 
     aloa(l2ddrw-4 downto 0) := vreq.startaddr(l2ddrw-4 downto 0);
+    if ddrbits > 32 then addrlo32 := dr.addrlo(3 downto 2);
+    elsif ddrbits > 16 then addrlo32 := '0' & dr.addrlo(2);
+    else addrlo32 := "00";
+    end if;
+    endaddr32 := dr.endaddr(3 downto 2);
+    endaddr43 := dr.endaddr(4 downto 3);
+    endaddr42 := dr.endaddr(4 downto 2);
     
     -- Calculate data mask    
     mask := (others => dr.pastlast);
@@ -555,7 +578,7 @@ begin
             mask(7 downto 0) := mask(7 downto 0) or x"F0";
           end if;
         when 64 =>
-          case dr.addrlo(3 downto 2) is
+          case addrlo32 is
             when "00"   => null;
             when "01"   => mask := mask or x"F000";
             when "10"   => mask := mask or x"FF00";
@@ -576,7 +599,7 @@ begin
             mask(7 downto 0) := mask(7 downto 0) or x"0F";
           end if;
         when 64 =>
-          case dr.endaddr(3 downto 2) is
+          case endaddr32 is
             when "00"   => mask := mask or x"0FFF";
             when "01"   => mask := mask or x"00FF";
             when "10"   => mask := mask or x"000F";
@@ -612,6 +635,8 @@ begin
     -- Calculate whether we should precharge the next cycle
     precharge_next := precharge_notras and dr.tras_met;
     block_precharge := '0';
+
+    inc_rctr := '0';
     
     goto_caslat := '0';
     case dr.s is
@@ -625,6 +650,7 @@ begin
         dv.sdo_csn := (others => '1');
         dv.rastimer := (others => '0');
         dv.tras_met := '0';
+        dv.response.rctr_gray := "0000";
         
         if dr.refpend='1' and dr.cfg.refon='1' then
           -- Periodic refresh
@@ -634,7 +660,7 @@ begin
           dv.refpend := '0';
           dv.s := dsrefresh;
 
-        elsif vstart /= dr.done_tog and (dr.cmds=dcon or (dr.cmds=dcoff and dr.cfg.renable='0')) then
+        elsif vstart /= dr.response.done_tog and (dr.cmds=dcon or (dr.cmds=dcoff and dr.cfg.renable='0')) then
           -- R/W data
           dv.sdo_rasn := '0' or hio1;
           dv.sdo_csn := acsn;
@@ -656,7 +682,7 @@ begin
               dv.sdo_ba := "0" & dr.cfg.emr;
               if dr.cfg.emr="01" then
                 dv.sdo_address := "0000"&conv_std_logic(dqsse=1)&dr.cfg.ocd&dr.cfg.ocd&dr.cfg.ocd 
-                                  & dr.cfg.odten(1)&"000"& dr.cfg.odten(0) & "00"; 
+                                  & dr.cfg.odten(1)&"000"& dr.cfg.odten(0) & dr.cfg.strength & "0"; 
                 
               else
                 dv.sdo_address := (others => '0');
@@ -701,7 +727,7 @@ begin
           dv.ctr := (others => '0');          
           dv.hwctr := '0';
         elsif vreq.hio='0' and dr.ctr(2 downto 0)=dr.cfg.trcd then
-          goto_caslat := '1';          
+          goto_caslat := '1';
         end if;
 
       when dscaslat =>
@@ -731,12 +757,9 @@ begin
         end if;
         
       when dsdata =>
-        -- The first request may be on a 2-odd column to get the first data first
-        -- Make sure following requests are on even mult of 4xcolumns
-        if dr.ctr(0)='1' and (hwidthen=0 or dr.hwidth='0' or dr.hwctr='1') then
-          dv.col(1) := '0';
-        end if;
-        
+
+        inc_rctr := '0';
+
         dv.sdo_odt := dr.hwrite;
         dv.sdo_oct := not dr.hwrite;
         dv.rbwrite := '1';
@@ -745,27 +768,27 @@ begin
         dv.sdo_qdrive := not (dr.hwrite xor oepols);
         dv.sdo_nbdrive := not (dr.hwrite xor oepols);
         
-        -- Fast acknowledge for reads from memory if AHB is slower (fastahb=0)
-        -- We need an extra cycle if we're reading an odd column and there
-        -- may be more data in the burst
-
+        -- If-case to handle pausing for half-width mode
         if hwidthen=0 or dr.hwidth='0' or dr.hwctr='1' then
-          if (dr.hwrite='0' and fastahb=0 and (hwidthen=0 or dr.hwidth='0')) then
-            if ddr_burstlen>1 and dr.col(1)='1' then
-              if dr.ctr=std_logic_vector(to_unsigned(1,dr.ctr'length)) then
-                dv.done_tog := not dr.done_tog;
-              end if;
-            elsif dr.ctr=zerov(dr.ctr'length) then
-              dv.done_tog := not dr.done_tog;
-            end if;
+
+          inc_rctr := '1';
+          
+          -- The first request may be on a 2-odd column to get the first data first
+          -- Make sure following requests are on even mult of 4xcolumns
+          if dr.ctr(0)='1' then
+            dv.col(1) := '0';          
           end if;
-        
+          -- Make sure we don't advance read counter for the unwanted 3:rd/4:th
+          -- word in the burst in this case
+          if dr.ctr(0)='1' and dr.col(1)='1' then
+            inc_rctr := '0';
+          end if;
+          
+          -- Toggle done and change state after completed burst
           if dr.ctr(log2(ddr_burstlen)-1 downto 0)=(not zerov(l2ddr_burstlen)) then
             dv.sdo_nbdrive := not oepols;
             dv.s := dsdone;
-            if not (dr.hwrite='0' and fastahb=0 and (hwidthen=0 or dr.hwidth='0')) then
-              dv.done_tog := not dr.done_tog;
-            end if;                    
+            dv.response.done_tog := not dr.response.done_tog;
           end if;
         end if;
 
@@ -773,14 +796,21 @@ begin
         if hasdqvalid/=0 and sdi.datavalid='0' and dr.hwrite='0' then
           dv.ctr := dr.ctr;
           dv.hwctr := dr.hwctr;
-          dv.done_tog := dr.done_tog;
+          dv.response := dr.response;
           dv.s := dsdata;
           dv.col(1) := dr.col(1);
           dv.rbwrite := '0';
+          inc_rctr := '0';
         end if;
-          
-      when dsdone =>        
-        dv.sdo_bdrive := not oepols;        
+
+        if inc_rctr='1' and dr.hwrite='0' then          
+          dv.response.rctr_gray(l2ddr_burstlen-1 downto 0) :=
+            nextgray(dr.response.rctr_gray(l2ddr_burstlen-1 downto 0));
+        end if;
+        
+      when dsdone =>
+        dv.response.rctr_gray := "0000";
+        dv.sdo_bdrive := not oepols;
         if dr.ctr(0)='1' then
           dv.sdo_qdrive := not oepols;
         end if;
@@ -789,7 +819,7 @@ begin
         end if;
         -- Short circuit if request on same row and waiting for Tras to expire
         if precharge_notras='1' and precharge_next='0' and 
-          dr.start_tog_prev /= dr.done_tog and dr.samerow='1' and vreq.hio='0' then 
+          dr.start_tog_prev /= dr.response.done_tog and dr.samerow='1' and vreq.hio='0' then 
           dv.col := acol;
           dv.endaddr := aendaddr;
           dv.addrlo := aloa;
@@ -813,7 +843,7 @@ begin
         regt0 := (others => '0'); regt1 := (others => '0');
         case ddrbits is
           when 16 =>
-            case dr.endaddr(4 downto 2) is
+            case endaddr42 is
               when "000"  => regt0 := regsd1(31 downto 16); regt1 := regsd1(15 downto 0);
               when "001"  => regt0 := regsd2(31 downto 16); regt1 := regsd2(15 downto 0);
               when "010"  => regt0 := regsd3(31 downto 16); regt1 := regsd3(15 downto 0);
@@ -823,7 +853,7 @@ begin
               when others => regt0 := sdi.regrdata(63 downto 48); regt1 := sdi.regrdata(47 downto 32);
             end case;
           when 32 =>
-            case dr.endaddr(4 downto 3) is
+            case endaddr43 is
               when "00"   => regt0 := regsd1; regt1 := regsd2;
               when "01"   => regt0 := regsd3; regt1 := regsd4;
               when "10"   => regt0 := regsd5; regt1 := regsd2;
@@ -851,7 +881,7 @@ begin
           w5 := '0';
           case ddrbits is
             when 16 =>
-              case dr.endaddr(4 downto 2) is
+              case endaddr42 is
                 when "000"  => regsd1 := regt0 & regt1;
                 when "001"  => regsd2 := regt0 & regt1;
                 when "010"  => regsd3 := regt0 & regt1;
@@ -863,7 +893,7 @@ begin
                 when others => null;
               end case;
             when 32 => 
-              case dr.endaddr(4 downto 2) is
+              case endaddr42 is
                 when "000"  => regsd1 := regt0;
                 when "001"  => regsd2 := regt1;
                 when "010"  => regsd3 := regt0;
@@ -875,7 +905,7 @@ begin
                 when others => null;
               end case;
             when 64 =>
-              case dr.endaddr(4 downto 2) is
+              case endaddr42 is
                 when "000"  => regsd1 := regt0(63 downto 32);
                 when "001"  => regsd2 := regt0(31 downto 0);
                 when "010"  => regsd3 := regt1(63 downto 32);
@@ -887,7 +917,7 @@ begin
                 when others => null;
               end case;
             when 128 =>
-              case dr.endaddr(4 downto 2) is
+              case endaddr42 is
                 when "000"  => regsd1 := regt0(127 downto 96);
                 when "001"  => regsd2 := regt0(95 downto 64);
                 when "010"  => regsd3 := regt0(63 downto 32);
@@ -899,7 +929,7 @@ begin
                 when others => null;                               
               end case;
             when others =>
-              case dr.endaddr(4 downto 2) is
+              case endaddr42 is
                 when "000"  => regsd1 := regt0(ddrbits-1 downto ddrbits-32);
                 when "001"  => regsd2 := regt0(ddrbits-33 downto ddrbits-64);
                 when "010"  => regsd3 := regt0(ddrbits-65 downto ddrbits-96);
@@ -922,7 +952,7 @@ begin
 
         if (dr.hwrite='1' and dr.ctr(2 downto 1)="11") or dr.hwrite='0' then
           dv.s := dsidle;
-          dv.done_tog := not dr.done_tog;
+          dv.response.done_tog := not dr.response.done_tog;
         end if;
 
         dv.cfg := (refon => regsd1(31), ocd => regsd1(30), emr => regsd1(29 downto 28),
@@ -938,7 +968,7 @@ begin
                    cal_en => regsd3(7 downto 0),
                    eightbanks => regsd4(8), dqsctrl => regsd4(7 downto 0),
                    caslat => regsd4(10 downto 9),
-                   odten => regsd5(17 downto 16), tras => regsd5(4 downto 0),
+                   odten => regsd5(17 downto 16), tras => regsd5(4 downto 0), strength => regsd5(15),
                    trtp => regsd4(13), cbcal_inc => regsd4(31 downto 28), cbcal_en => regsd4(27 downto 24),
                    regmem => regsd4(21)
                    );
@@ -989,10 +1019,10 @@ begin
         dv.sdo_wen := not dr.hwrite;
         if dr.hwrite='0' then
           case dr.cfg.caslat is
-            when "00"   => dv.read_pend(2+ddr_burstlen downto 3) := (others => '1');
-            when "01"   => dv.read_pend(3+ddr_burstlen downto 4) := (others => '1');
-            when "10"   => dv.read_pend(4+ddr_burstlen downto 5) := (others => '1');
-            when others => dv.read_pend(5+ddr_burstlen downto 6) := (others => '1');
+            when "00"   => dv.read_pend(4 downto 3) := "11";
+            when "01"   => dv.read_pend(5 downto 4) := "11";
+            when "10"   => dv.read_pend(6 downto 5) := "11";
+            when others => dv.read_pend(7 downto 6) := "11";
           end case;
         end if;
       elsif dr.hwidth='1' then
@@ -1039,6 +1069,16 @@ begin
     -- Refresh and init handling    
     dv.refctr := std_logic_vector(unsigned(dr.refctr)+1);
     case dr.cmds is
+      when dcrstdel =>
+        if dr.refctr=std_logic_vector(to_unsigned(MHz*rstdel, dr.refctr'length)) then
+          dv.cmds := dcoff;
+        end if;
+        -- Bypass reset delay by writing anything to regsd2
+        if dr.start_tog_prev='1' and
+          vreq.hio='1' and vreq.hwrite='1' and vreq.endaddr(4 downto 2)="001" then
+          dv.cmds := dcoff;
+        end if;
+        
       when dcoff =>
         -- Wait for renable to be set high and phy to be locked
         dv.refctr := (others => '0');
@@ -1181,13 +1221,19 @@ begin
     
     if ddr_rst='0' then
       dv.s := dsidle;
-      dv.cmds := dcoff;
-      dv.done_tog := '0';      
+      dv.cmds := dcrstdel;
+      dv.response := ddr_response_none;
       dv.casctr := (others => '0');
       dv.refctr := (others => '0');
       dv.pchpend := '0';
       dv.refpend := '0';
       dv.rbwrite := '0';
+      dv.ctr := (others => '0');
+      dv.hwctr := '0';
+      dv.sdo_nbdrive := not oepols;
+      dv.sdo_csn := (others => '1');
+      dv.rastimer := (others => '0');
+      dv.tras_met := '0';
       dv.cfg.command  := "000";
       dv.cfg.emr      := "00";
       dv.cfg.csize    := conv_std_logic_vector(col-9, 2);
@@ -1204,6 +1250,7 @@ begin
       dv.cfg.eightbanks := conv_std_logic_vector(eightbanks, 1)(0);
       dv.cfg.odten := std_logic_vector(to_unsigned(odten,2));
       dv.cfg.dqsctrl := (others => '0');      
+      dv.cfg.strength := '0';
       if pwron = 1 then dv.cfg.renable :=  '1'; else dv.cfg.renable:='0'; end if;
       -- Default to min 15 ns tRCD, 15 ns tRP, min(7.5 ns,2*tCK) tRTP      
       -- Use CL=3 for DDR2-400/533, 4 for DDR2-667, 5 for DDR2-800
@@ -1268,28 +1315,31 @@ begin
 
     -- Dynamic nosync handling (nosync=2)
     if plmemwrite then
-      dv.done_tog1 := dr.done_tog;
-      dv.done_tog2 := dr.done_tog;
+      dv.response1 := dr.response;
+      dv.response2 := dr.response;
     else
-      dv.done_tog1 := dv.done_tog;
-      dv.done_tog2 := dv.done_tog;
+      dv.response1 := dv.response;
+      dv.response2 := dv.response;
     end if;
-    if reqsel='1' then dv.done_tog1 := '0'; end if;    
-    if reqsel='0' then dv.done_tog2 := '0'; end if;
-    done_tog2 <= dr.done_tog2;
-    
+    if reqsel='1' then dv.response1 := ddr_response_none; end if;    
+    if reqsel='0' then dv.response2 := ddr_response_none; end if;
+
     if nosync > 1 then
-      done_tog <= dr.done_tog1;
+      resp := dr.response1;
     elsif plmemwrite then
-      done_tog <= dr.done_tog_prev;
+      resp := dr.response_prev;
     else
-      done_tog <= dr.done_tog;
+      resp := dr.response;
     end if;
+    resp2 := dr.response2;
+    
     rbwdata <= rbwd;
     rbwaddr <= rbwa;
     rbwrite <= rbw;
     wbraddr <= wbra;
     sdo     <= o;
+    response  <= resp;
+    response2 <= resp2;
     ndr     <= dv;
   end process;
 

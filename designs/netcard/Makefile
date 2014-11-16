@@ -6,7 +6,7 @@ DEVICE=$(PART)-$(PACKAGE)$(SPEED)
 UCF=$(GRLIB)/boards/$(BOARD)/default.ucf
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=std
-XSTOPT="-resource_sharing no"
+XSTOPT=-resource_sharing no
 SIMTOP=netcard
 VHDLSYNFILES=config.vhd netcard.vhd
 VHDLSIMFILES=
@@ -20,7 +20,7 @@ LIBSKIP = core1553bbc core1553brm core1553brt gr1553 corePCIF \
 
 DIRSKIP = b1553 pcif leon2 leon2ft crypto satcan ddr usb ata leon3ft \
 	usbhc leon3 haps can i2c satcan ascs spi memctrl hcan slink \
-	coremp7
+	coremp7 leon4 leon4b64
 
 FILESKIP = i2cmst.vhd
 

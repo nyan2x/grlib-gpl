@@ -7,14 +7,6 @@ volatile int *lreg_rt = (int *) 0x80000000;
 #define IMASK  0x240
 #define IFORCE 0x208
 
-/* RT registers */
-volatile int *rt_stat = (int *) 0x80000d00;
-volatile int *rt_ctrl = (int *) 0x80000d04;
-volatile int *rt_vword = (int *) 0x80000d08;
-volatile int *rt_intvect = (int *) 0x80000d0c;
-volatile int *rt_addrreg = (int *) 0x80000d10;
-volatile int *rt_irq = (int *) 0x80000d14;
-
 volatile unsigned short *rtmem;
 volatile int rt_done;
 
@@ -29,7 +21,7 @@ enable_irq_rt (int irq)
 disable_irq_rt (int irq) { lreg_rt[IMASK/4] &= ~(1 << irq); }
 force_irq_rt (int irq) { lreg_rt[IFORCE/4] = (1 << irq); }
 
-void irqhandler_rt(int irq)
+void irqhandler_rt(volatile unsigned int* rt_intvect, int irq)
 {
   
   int i, tmp, intvect, rx, suba, tsw, cmdval;
@@ -88,7 +80,7 @@ void sync(volatile unsigned int* gpio, int gpio_sync, int gpio_ack){
 }
 
 
-int rt_1553_test(unsigned int brm_addr, unsigned int mem_addr, unsigned int gpio_addr, int gpio_sync, int gpio_ack)
+int rt_1553_test(int apbaddr, unsigned int brm_addr, unsigned int mem_addr, unsigned int gpio_addr, int gpio_sync, int gpio_ack)
 {
 
   rt_done = 0; 
@@ -97,6 +89,13 @@ int rt_1553_test(unsigned int brm_addr, unsigned int mem_addr, unsigned int gpio
   int temp;
   volatile unsigned int *gpio = (unsigned int*)gpio_addr;
   volatile unsigned int *mem;
+
+  volatile int *rt_stat = (int *) apbaddr;
+  volatile int *rt_ctrl = (int *) (apbaddr + 0x4);
+  volatile int *rt_vword = (int *) (apbaddr + 0x8);
+  volatile int *rt_intvect = (int *) (apbaddr + 0xC);
+  volatile int *rt_addrreg = (int *) (apbaddr + 0x10);
+  volatile int *rt_irq = (int *) (apbaddr + 0x14);
 
   report_device(0x01071000);
 
@@ -137,10 +136,10 @@ int rt_1553_test(unsigned int brm_addr, unsigned int mem_addr, unsigned int gpio
   if (*rt_addrreg != (int) rtmem) error_rt("RT address register error.", &ec);
 
   *rt_irq = 0x10000;    /* Enable irq */
-  if (*rt_irq != 0x10000) fail(1); 
+  if (*rt_irq != 0x10000) fail(2); 
 
   *rt_ctrl = 0xc41D0;    /* set clkspd=24 MHz, sa30loop=1, writetsw=1, bcasten=1, rtaddr=1 and intack high */
-  if (*rt_ctrl != 0xc41D0) fail(2); /*puts("RT ctrl register error.");*/
+  if (*rt_ctrl != 0xc41D0) fail(3); /*puts("RT ctrl register error.");*/
 
 
   /*printf("Log: %x\n", logbuf);*/

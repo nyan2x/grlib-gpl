@@ -24,5 +24,4 @@ ftmctrl_unisim_sd0.vhd
 sysmon_unisim.vhd
 mul_unisim.vhd
 spictrl_unisim.vhd
-spictrl_unisim_comb0.vhd
-spictrl_unisim_comb1.vhd
+obt1553_unisim.vhd

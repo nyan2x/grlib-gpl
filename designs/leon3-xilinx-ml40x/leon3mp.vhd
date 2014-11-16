@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -35,9 +35,11 @@ use gaisler.memctrl.all;
 use gaisler.leon3.all;
 use gaisler.uart.all;
 use gaisler.misc.all;
+use gaisler.i2c.all;
 use gaisler.net.all;
 use gaisler.jtag.all;
 use gaisler.spacewire.all;
+use gaisler.ddrpkg.all;
 
 library esa;
 use esa.memoryctrl.all;
@@ -211,9 +213,6 @@ constant I2C_FILTER : integer := (CPU_FREQ*5+50000)/100000+1;
 constant IOAEN : integer := CFG_DDRSP;
 
 signal stati : ahbstat_in_type;
-
-signal ddsi  : ddrmem_in_type;
-signal ddso  : ddrmem_out_type;
 
 signal ddrclkfb, ssrclkfb, ddr_clkl, ddr_clk90l, ddr_clknl, ddr_clk270l : std_ulogic;
 signal ddr_clkv 	: std_logic_vector(2 downto 0);

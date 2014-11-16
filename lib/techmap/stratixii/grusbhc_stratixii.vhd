@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -61,7 +61,8 @@ entity grusbhc_stratixii is
     memtech     : integer range 0 to NTECH := DEFMEMTECH;
     memsel      : integer                  := 0;
     syncprst    : integer range 0 to 1     := 0;
-    sysfreq     : integer                  := 65000);
+    sysfreq     : integer                  := 65000;
+    pcidev      : integer range 0 to 1     := 0);
   port (
     clk               : in  std_ulogic;
     uclk              : in  std_ulogic;
@@ -789,7 +790,7 @@ architecture rtl of grusbhc_stratixii is
       bwrd = 16 and utm_type = 2 and vbusconf = 3 and ramtest = 0 and
       urst_time = 0 and oepol = 0 and scantest = 0 and
       is_fpga(memtech) = 1 and memsel = 0 and syncprst = 0 and
-      sysfreq = 65000 then
+      sysfreq = 65000 and pcidev = 0 then
       return true;
     end if;
     -- comb1
@@ -799,7 +800,7 @@ architecture rtl of grusbhc_stratixii is
       bwrd = 16 and utm_type = 2 and vbusconf = 3 and ramtest = 0 and
       urst_time = 0 and oepol = 0 and scantest = 0 and
       is_fpga(memtech) = 1 and memsel = 0 and syncprst = 0 and
-      sysfreq = 65000 then
+      sysfreq = 65000 and pcidev = 0 then
       return true;
     end if;
     -- comb2
@@ -809,7 +810,7 @@ architecture rtl of grusbhc_stratixii is
       bwrd = 16 and utm_type = 2 and vbusconf = 3 and ramtest = 0 and
       urst_time = 0 and oepol = 0 and scantest = 0 and
       is_fpga(memtech) = 1 and memsel = 0 and syncprst = 0 and
-      sysfreq = 65000 then
+      sysfreq = 65000 and pcidev = 0 then
       return true;
     end if;
     -- comb3
@@ -819,7 +820,7 @@ architecture rtl of grusbhc_stratixii is
       bwrd = 16 and utm_type = 2 and vbusconf = 3 and ramtest = 0 and
       urst_time = 0 and oepol = 0 and scantest = 0 and
       is_fpga(memtech) = 1 and memsel = 0 and syncprst = 0 and
-      sysfreq = 65000 then
+      sysfreq = 65000 and pcidev = 0 then
       return true;
     end if;    
     return false;
@@ -852,7 +853,8 @@ begin
             is_fpga(memtech) = 1 and
             memsel           = 0 and
             syncprst         = 0 and
-            sysfreq          = 65000 generate
+            sysfreq          = 65000 and
+            pcidev           = 0 generate
     usbhc0 : grusbhc_stratixii_comb0
       port map(
         clk,uclk,rst,ehc_apbsi_psel,ehc_apbsi_penable,ehc_apbsi_paddr,
@@ -905,7 +907,8 @@ begin
             is_fpga(memtech) = 1 and
             memsel           = 0 and
             syncprst         = 0 and
-            sysfreq          = 65000 generate
+            sysfreq          = 65000 and
+            pcidev           = 0 generate
     usbhc0 : grusbhc_stratixii_comb1
       port map(
         clk,uclk,rst,ehc_apbsi_psel,ehc_apbsi_penable,ehc_apbsi_paddr,
@@ -958,7 +961,8 @@ begin
             is_fpga(memtech) = 1 and
             memsel           = 0 and
             syncprst         = 0 and
-            sysfreq          = 65000 generate
+            sysfreq          = 65000 and
+            pcidev           = 0 generate
     usbhc0 : grusbhc_stratixii_comb2
       port map(
         clk,uclk,rst,ehc_apbsi_psel,ehc_apbsi_penable,ehc_apbsi_paddr,
@@ -1011,7 +1015,8 @@ begin
             is_fpga(memtech) = 1 and
             memsel           = 0 and
             syncprst         = 0 and
-            sysfreq          = 65000 generate
+            sysfreq          = 65000 and
+            pcidev           = 0 generate
     usbhc0 : grusbhc_stratixii_comb3
       port map(
         clk,uclk,rst,ehc_apbsi_psel,ehc_apbsi_penable,ehc_apbsi_paddr,
@@ -1046,7 +1051,7 @@ begin
   nomap : if not valid_comb(
     nports,ehcgen,uhcgen,n_cc,n_pcc,prr,portroute1,portroute2,endian_conv,
     be_regs,be_desc,uhcblo,bwrd,utm_type,vbusconf,ramtest,urst_time,oepol,
-    scantest,memtech,memsel,syncprst,sysfreq) generate
+    scantest,memtech,memsel,syncprst,sysfreq,pcidev) generate
     err : process 
     begin
       assert false report "ERROR : Can't map a netlist for this combination " &

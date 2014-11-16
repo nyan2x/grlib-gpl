@@ -24,6 +24,8 @@
 #define CONFIG_SYN_TECH stratix3
 #elif defined CONFIG_SYN_CYCLONEIII
 #define CONFIG_SYN_TECH cyclone3
+#elif defined CONFIG_SYN_EASIC45
+#define CONFIG_SYN_TECH easic45
 #elif defined CONFIG_SYN_EASIC90
 #define CONFIG_SYN_TECH easic90
 #elif defined CONFIG_SYN_IHP25
@@ -76,6 +78,10 @@
 #define CONFIG_SYN_TECH smic013
 #elif defined CONFIG_SYN_UT025CRH
 #define CONFIG_SYN_TECH ut25
+#elif defined CONFIG_SYN_UT130HBD
+#define CONFIG_SYN_TECH ut130
+#elif defined CONFIG_SYN_UT90NHBD
+#define CONFIG_SYN_TECH ut90
 #elif defined CONFIG_SYN_TSMC90
 #define CONFIG_SYN_TECH tsmc90
 #elif defined CONFIG_SYN_TM65GPLUS
@@ -143,6 +149,8 @@
 #define CFG_CLK_TECH rhlib18t
 #elif defined CONFIG_CLK_RHUMC
 #define CFG_CLK_TECH rhumc
+#elif defined CONFIG_CLK_UT130HBD
+#define CFG_CLK_TECH ut130
 #else
 #define CFG_CLK_TECH inferred
 #endif
@@ -212,6 +220,16 @@
 #endif
 #else
 #define CFG_IU_V8 0
+#endif
+
+#ifdef CONFIG_IU_MUL_MODGEN
+#define CFG_IU_MUL_STRUCT 1
+#elif defined CONFIG_IU_MUL_TECHSPEC
+#define CFG_IU_MUL_STRUCT 2
+#elif defined CONFIG_IU_MUL_DW
+#define CFG_IU_MUL_STRUCT 3
+#else
+#define CFG_IU_MUL_STRUCT 0
 #endif
 
 #ifndef CONFIG_PWD
@@ -318,7 +336,9 @@
 #define CFG_ILINE_SZ 8
 #endif
 
-#if defined CONFIG_ICACHE_ALGORND
+#if defined CONFIG_ICACHE_ALGODIR
+#define CFG_ICACHE_ALGORND 3
+#elif defined CONFIG_ICACHE_ALGORND
 #define CFG_ICACHE_ALGORND 2
 #elif defined CONFIG_ICACHE_ALGOLRR
 #define CFG_ICACHE_ALGORND 1
@@ -403,7 +423,9 @@
 #define CFG_DLINE_SZ 8
 #endif
 
-#if defined CONFIG_DCACHE_ALGORND
+#if defined CONFIG_DCACHE_ALGODIR
+#define CFG_DCACHE_ALGORND 3
+#elif defined CONFIG_DCACHE_ALGORND
 #define CFG_DCACHE_ALGORND 2
 #elif defined CONFIG_DCACHE_ALGOLRR
 #define CFG_DCACHE_ALGORND 1
@@ -635,6 +657,10 @@
 #define CONFIG_AHB_RROBIN 0
 #endif
 
+#ifndef CONFIG_AHB_FPNPEN
+#define CONFIG_AHB_FPNPEN 0
+#endif
+
 #ifndef CONFIG_AHB_IOADDR
 #define CONFIG_AHB_IOADDR FFF
 #endif
@@ -706,6 +732,10 @@
 
 #ifndef CONFIG_DSU_ETH_PROG
 #define CONFIG_DSU_ETH_PROG 0
+#endif
+
+#ifndef CONFIG_DSU_ETH_DIS
+#define CONFIG_DSU_ETH_DIS 0
 #endif
 
 #ifndef CONFIG_MCTRL_LEON2

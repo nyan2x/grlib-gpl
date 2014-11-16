@@ -1,4 +1,4 @@
-tech/dware
+#tech/dware
 synplify
 techmap
 spw

@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -116,7 +116,7 @@ architecture rtl of spictrl_net is
 
 begin
 
-  xil : if (is_unisim(tech) = 1) generate
+  xil : if false generate --(is_unisim(tech) = 1) generate
     xilctrl :  spictrl_unisim
       generic map (
         slvselen => slvselen,
@@ -154,7 +154,7 @@ begin
   end generate;
 
 -- pragma translate_off
-  nonet : if not ((is_unisim(tech) = 1)) generate
+  nonet : if true generate --not ((is_unisim(tech) = 1)) generate
     err : process
     begin
       assert false report "ERROR : No SPICTRL netlist available for this process!"

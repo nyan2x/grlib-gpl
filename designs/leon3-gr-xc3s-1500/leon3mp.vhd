@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -663,7 +663,7 @@ begin
       clkgen_spw_rx : clkgen  		-- clock generator
       generic map (clktech, 12, 2, 0,
 	1, 0, 0, 0, 25000)
-      port map (clk3, clk3, spw_clkl, spw_clkln, open, open, open, cgi2, cgo2, open, open);
+      port map (ethclk, ethclk, spw_clkl, spw_clkln, open, open, open, cgi2, cgo2, open, open);
     end generate;
         
     swloop : for i in 0 to CFG_SPW_NUM-1 generate

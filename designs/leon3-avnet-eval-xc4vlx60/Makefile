@@ -9,8 +9,8 @@ DEVICE=$(PART)-$(PACKAGE)$(SPEED)
 UCF=leon3mp.ucf
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=high
-XSTOPT="-uc leon3mp.xcf"
-ISEMAPOPT="-timing"
+XSTOPT=-uc leon3mp.xcf
+ISEMAPOPT=-timing
 SYNPOPT="set_option -pipe 1; set_option -retiming 1; set_option -write_apr_constraint 0"
 VHDLOPTSYNFILES= \
 	mig_36_1/user_design/rtl/mig_36_1_parameters_0.vhd \

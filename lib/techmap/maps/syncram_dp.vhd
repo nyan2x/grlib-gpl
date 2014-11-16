@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -98,13 +98,6 @@ begin
     x0 : artisan_syncram_dp generic map (abits, dbits)
          port map (clk1, address1, datain1, dataout1, enable1, write1,
                    clk2, address2, datain2, dataout2, enable2, write2);
-  end generate;
-
-  axc  : if (tech = axcel) or (tech = axdsp) generate
-    x0 : axcel_syncram_2p generic map (abits, dbits)
-    port map (clk1, enable1, address1, dataout1, clk1, address1, datain1, write1);
-    x1 : axcel_syncram_2p generic map (abits, dbits)
-    port map (clk1, enable2, address2, dataout2, clk1, address1, datain1, write1);
   end generate;
 
   pa3  : if tech = apa3 generate

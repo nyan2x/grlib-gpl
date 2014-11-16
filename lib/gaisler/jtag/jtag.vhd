@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ constant JTAG_NEXTREME   : integer range 0 to 65535 := 16#102#;
 constant JTAG_IHP25RH1   : integer range 0 to 65535 := 16#251#;
 constant JTAG_NGMP_PROTO : integer range 0 to 65535 := 16#281#;
 constant JTAG_ORBITA1    : integer range 0 to 65535 := 16#631#;
+constant JTAG_ORBITA_OBTMP : integer range 0 to 65535 := 16#632#;
 constant JTAG_UT699RH    : integer range 0 to 65535 := 16#699#;
 constant JTAG_UT700RH    : integer range 0 to 65535 := 16#700#;
 constant JTAG_GR702      : integer range 0 to 65535 := 16#702#;

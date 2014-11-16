@@ -10,49 +10,30 @@
 # main clocks
 
 NET "clkm" 		TNM_NET = "clkm";
+NET "ddr2clk" TNM_NET = "ddr2clk";
+TIMESPEC "TS_clkm_ddr2clk" = FROM "clkm" TO "ddr2clk" TIG;
+TIMESPEC "TS_ddr2clk_clkm" = FROM "ddr2clk" TO "clkm" TIG;
 
 ##################################################################
-# Enable these is you have enabled the SVGA clock generator
 
 NET video_clk period = 20.000 ;
 NET "video_clk" TNM_NET = "video_clk";
-TIMESPEC "TS_clkm_videoclk" = FROM "clkm" TO "video_clk" TIG;
-TIMESPEC "TS_videoclk_clkm" = FROM "video_clk" TO "clkm" TIG;
+TIMESPEC "TS_clkm_videoclk" = FROM "clkm" TO "video_clk" 10 ns DATAPATHONLY;
+TIMESPEC "TS_videoclk_clkm" = FROM "video_clk" TO "clkm" 10 ns DATAPATHONLY;
 
 ##################################################################
+# RGMII interface
+NET erx_clk PERIOD = 8.000 ;
+OFFSET = in : 10.000 : BEFORE erx_clk ;
 
-##################################################################
-# Enable these is you have enabled any Spacewire ports
+NET "rgmii0?tx_clk" TNM_NET = "rgmii0_tx_clk";
+TIMESPEC "TS_clkm_rgmii0_tx_clk" = FROM "clkm" TO "rgmii0_tx_clk" 8 ns DATAPATHONLY;
+TIMESPEC "TS_rgmii0_tx_clk_clkm" = FROM "rgmii0_tx_clk" TO "clkm" 8 ns DATAPATHONLY;
+TIMESPEC "TS_tx_clk_freq" = PERIOD rgmii0_tx_clk 8.00 ns;
 
-#NET spw100 period = 10.000 ;
-#NET "spw100" 	TNM_NET = "spw100";
-#TIMESPEC "TS_clkm_spw100" = FROM "clkm" TO "spw100" TIG;
-#TIMESPEC "TS_spw100_clkm" = FROM "spw100" TO "clkm" TIG;
-
-##################################################################
-
-
-##################################################################
-# Enable these is you have enabled Gigabit Ethernet
-#NET rgmii0/clkm0 period = 40.000 ;
-#NET "rgmii0/clkm0" 	TNM_NET = "clkm0";
-#TIMESPEC "TS_clkm_clkm0" = FROM "clkm" TO "clkm0" TIG;
-#TIMESPEC "TS_clkm0_clkm" = FROM "clkm0" TO "clkm" TIG;
-
-#NET rgmii0/clkm1 period = 8.000 ;
-#NET "rgmii0/clkm1" 	TNM_NET = "clkm1";
-#TIMESPEC "TS_clkm_clkm1" = FROM "clkm" TO "clkm1" TIG;
-#TIMESPEC "TS_clkm1_clkm" = FROM "clkm1" TO "clkm" TIG;
-
-#NET rgmii0/uclk125 period = 8.000;
-#NET "rgmii0/uclk125"	TNM_NET = "uclk125";
-#TIMESPEC "TS_clkm_uclkm125" = FROM "clkm" TO "uclk125" TIG;
-#TIMESPEC "TS_uclk125_clkm" = FROM "uclk125" TO "clkm" TIG;
-
-#NET rgmii0/clk25 period = 40.000;
-#NET "rgmii0/clk25"	TNM_NET = "clk25";
-#TIMESPEC "TS_clkm_clk25" = FROM "clkm" TO "clk25" TIG;
-#TIMESPEC "TS_clk25_clkm" = FROM "clk25" TO "clkm" TIG;
+#NET "gmiii_gtx_clk" TNM_NET = "gmiii_gtx_clk";
+#TIMESPEC "TS_clkm_rgmiii_gtx_clk" = FROM "clkm" TO "gmiii_gtx_clk" TIG;
+#TIMESPEC "TS_gmiii_gtx_clk_clkm" = FROM "gmiii_gtx_clk" TO "clkm" TIG;
 ##################################################################
 
 CONFIG VCCAUX = 3.3;
@@ -62,19 +43,6 @@ NET "clk2" period = 5.000 ;
 NET "clk"   LOC = "J20" | IOSTANDARD =LVCMOS33; # soldered oscillator, 50 MHz
 NET "clk2"  LOC = "K20" | IOSTANDARD =LVCMOS33; # socket - user provided frequency
 
-NET erx_clk PERIOD = 8.000 ;
-OFFSET = in : 10.000 : BEFORE erx_clk ;
-OFFSET = out : 15.000 : AFTER erx_clk ;
-#OFFSET = in : 10.000 : BEFORE rx_clki ;
-#OFFSET = out : 15.000 : AFTER rx_clki ;
-NET clk125 PERIOD = 8.000 ;
-OFFSET = out : 19.000 : AFTER clk125 ;
-OFFSET = in : 10.000 : BEFORE clk125 ;
-
-#NET usb_clk period = 16.667;
-#OFFSET = out : 10.000 : AFTER usb_clk ;
-#OFFSET = in : 8.000 : BEFORE usb_clk ;
-
 # Synplify versions of DDR2 false paths
 #NET "mig_gen.ddrc.MCB_inst.memc?_wrapper_inst.memc?_mcb_raw_wrapper_inst.selfrefresh_mcb_mode" TIG;
 #NET "mig_gen.ddrc.MCB_inst.c?_pll_lock" TIG;
@@ -82,13 +50,13 @@ OFFSET = in : 10.000 : BEFORE clk125 ;
 #NET "mig_gen.ddrc.i.calib_done" TIG;
 
 # XST versions of DDR2 false paths
-NET "mig_gen.ddrc/MCB_inst/memc?_wrapper_inst/memc?_mcb_raw_wrapper_inst/selfrefresh_mcb_mode" TIG;
-NET "mig_gen.ddrc/MCB_inst/c?_pll_lock" TIG;
-NET "mig_gen.ddrc/MCB_inst/memc?_wrapper_inst/memc?_mcb_raw_wrapper_inst/gen_term_calib.mcb_soft_calibration_top_inst/mcb_soft_calibration_inst/CKE_Train" TIG; ## This path exists for DDR2 only
-NET "mig_gen.ddrc/MCB_inst/memc?_wrapper_inst/memc?_mcb_raw_wrapper_inst/gen_term_calib.mcb_soft_calibration_top_inst/mcb_soft_calibration_inst/DONE_SOFTANDHARD_CAL" TIG;
+NET "mig_gen.ddrc?MCB_inst?memc?_wrapper_inst?memc?_mcb_raw_wrapper_inst?selfrefresh_mcb_mode" TIG;
+NET "mig_gen.ddrc?MCB_inst?c?_pll_lock" TIG;
+NET "mig_gen.ddrc?MCB_inst?memc?_wrapper_inst?memc?_mcb_raw_wrapper_inst?gen_term_calib.mcb_soft_calibration_top_inst?mcb_soft_calibration_inst?CKE_Train" TIG; ## This path exists for DDR2 only
+NET "mig_gen.ddrc?MCB_inst?memc?_wrapper_inst?memc?_mcb_raw_wrapper_inst?gen_term_calib.mcb_soft_calibration_top_inst?mcb_soft_calibration_inst?DONE_SOFTANDHARD_CAL" TIG;
 
 NET "clk" CLOCK_DEDICATED_ROUTE = FALSE;
-PIN "clkgen0/xc3s.v/bufg0.O" CLOCK_DEDICATED_ROUTE = FALSE;
+#PIN "clkgen0?xc3s.v?bufg0.O" CLOCK_DEDICATED_ROUTE = FALSE;
 
 # memory interface (for Parallel Flash U8)
 # on I/O BANK1 and I/O BANK2 => 3.3V logic 
@@ -236,12 +204,12 @@ NET "erxd(1)" LOC = "k17" | IOSTANDARD =LVCMOS33 | IOBDELAY = NONE;
 NET "erxd(2)" LOC = "n16" | IOSTANDARD =LVCMOS33 | IOBDELAY = NONE;
 NET "erxd(3)" LOC = "m17" | IOSTANDARD =LVCMOS33 | IOBDELAY = NONE;
 
-NET "etx_en"  LOC = "m18" | IOSTANDARD =LVTTL | FAST | DRIVE=24; 
-NET "etx_clk" LOC = "m19" | IOSTANDARD =LVTTL | SLOW | DRIVE=12;
-NET "etxd(0)" LOC = "p17" | IOSTANDARD =LVTTL | FAST | DRIVE=24;
-NET "etxd(1)" LOC = "m16" | IOSTANDARD =LVTTL | FAST | DRIVE=24;
-NET "etxd(2)" LOC = "n19" | IOSTANDARD =LVTTL | FAST | DRIVE=24;
-NET "etxd(3)" LOC = "n20" | IOSTANDARD =LVTTL | FAST | DRIVE=24;
+NET "etx_en"  LOC = "m18" | IOSTANDARD =LVTTL | FAST; 
+NET "etx_clk" LOC = "m19" | IOSTANDARD =LVTTL | SLOW;
+NET "etxd(0)" LOC = "p17" | IOSTANDARD =LVTTL | FAST;
+NET "etxd(1)" LOC = "m16" | IOSTANDARD =LVTTL | FAST;
+NET "etxd(2)" LOC = "n19" | IOSTANDARD =LVTTL | FAST;
+NET "etxd(3)" LOC = "n20" | IOSTANDARD =LVTTL | FAST;
 
 
 # I2C interface conecting to Monitor via DVI-I connector J4

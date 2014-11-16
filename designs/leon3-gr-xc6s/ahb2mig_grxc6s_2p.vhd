@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ entity ahb2mig_grxc6s_2p is
     paddr      : integer := 0;
     pmask      : integer := 16#fff#;
     vgamst     : integer := 0;
-    vgaburst   : integer := 0
+    vgaburst   : integer := 0;
+    clkdiv     : integer := 2
   );
   port(
     mcb3_dram_dq      : inout  std_logic_vector(15 downto 0);
@@ -75,11 +76,100 @@ entity ahb2mig_grxc6s_2p is
     rst_n_async	      : in std_logic; 
     clk_amba          : in std_logic;
     clk_mem_n         : in std_logic;
-    clk_mem_p         : in std_logic
+    clk_mem_p         : in std_logic;
+    clk_125           : out std_logic;
+    clkout5           : out std_logic
    );
 end ;
 
 architecture rtl of ahb2mig_grxc6s_2p is 
+
+component mig_37
+generic
+  (
+    C3_P0_MASK_SIZE         : integer := 4;
+    C3_P0_DATA_PORT_SIZE    : integer := 32;
+    C3_P1_MASK_SIZE         : integer := 4;
+    C3_P1_DATA_PORT_SIZE    : integer := 32;
+    C3_MEMCLK_PERIOD        : integer := 5000; -- Memory data transfer clock period.
+    C3_RST_ACT_LOW          : integer := 0; -- # = 1 for active low reset, -- # = 0 for active high reset.
+    C3_INPUT_CLK_TYPE       : string := "SINGLE_ENDED"; -- input clock type DIFFERENTIAL or SINGLE_ENDED.
+    C3_CALIB_SOFT_IP        : string := "TRUE"; -- # = TRUE, Enables the soft calibration logic, -- # = FALSE, Disables the soft calibration logic.
+    C3_SIMULATION           : string := "FALSE"; -- # = TRUE, Simulating the design. Useful to reduce the simulation time, -- # = FALSE, Implementing the design.
+    DEBUG_EN                : integer := 0; -- # = 1, Enable debug signals/controls, --   = 0, Disable debug signals/controls.
+    C3_MEM_ADDR_ORDER       : string := "ROW_BANK_COLUMN"; -- The order in which user address is provided to the memory controller, -- ROW_BANK_COLUMN or BANK_ROW_COLUMN.
+    C3_NUM_DQ_PINS          : integer := 16; -- External memory data width.
+    C3_MEM_ADDR_WIDTH       : integer := 13; -- External memory address width.
+    C3_MEM_BANKADDR_WIDTH   : integer := 3; -- External memory bank address width.
+    C3_CLKOUT5_DIVIDE       : integer := 10 -- Extra clock divider
+  );
+  port (
+   mcb3_dram_dq                            : inout  std_logic_vector(C3_NUM_DQ_PINS-1 downto 0);
+   mcb3_dram_a                             : out std_logic_vector(C3_MEM_ADDR_WIDTH-1 downto 0);
+   mcb3_dram_ba                            : out std_logic_vector(C3_MEM_BANKADDR_WIDTH-1 downto 0);
+   mcb3_dram_ras_n                         : out std_logic;
+   mcb3_dram_cas_n                         : out std_logic;
+   mcb3_dram_we_n                          : out std_logic;
+   mcb3_dram_odt                           : out std_logic;
+   mcb3_dram_cke                           : out std_logic;
+   mcb3_dram_dm                            : out std_logic;
+   mcb3_dram_udqs                          : inout  std_logic;
+   mcb3_dram_udqs_n                        : inout  std_logic;
+   mcb3_rzq                                : inout  std_logic;
+   mcb3_zio                                : inout  std_logic;
+   mcb3_dram_udm                           : out std_logic;
+   c3_sys_clk                              : in  std_logic;
+   c3_sys_rst_n                            : in  std_logic;
+   c3_calib_done                           : out std_logic;
+   c3_clk0                                 : out std_logic;
+   c3_rst0                                 : out std_logic;
+   clk_125                                 : out std_logic; -- 125 MHz for RGMII
+   clkout5                                 : out std_logic; -- Extra clock
+   mcb3_dram_dqs                           : inout  std_logic;
+   mcb3_dram_dqs_n                         : inout  std_logic;
+   mcb3_dram_ck                            : out std_logic;
+   mcb3_dram_ck_n                          : out std_logic;
+   c3_p0_cmd_clk                           : in std_logic;
+   c3_p0_cmd_en                            : in std_logic;
+   c3_p0_cmd_instr                         : in std_logic_vector(2 downto 0);
+   c3_p0_cmd_bl                            : in std_logic_vector(5 downto 0);
+   c3_p0_cmd_byte_addr                     : in std_logic_vector(29 downto 0);
+   c3_p0_cmd_empty                         : out std_logic;
+   c3_p0_cmd_full                          : out std_logic;
+   c3_p0_wr_clk                            : in std_logic;
+   c3_p0_wr_en                             : in std_logic;
+   c3_p0_wr_mask                           : in std_logic_vector(C3_P0_MASK_SIZE - 1 downto 0);
+   c3_p0_wr_data                           : in std_logic_vector(C3_P0_DATA_PORT_SIZE - 1 downto 0);
+   c3_p0_wr_full                           : out std_logic;
+   c3_p0_wr_empty                          : out std_logic;
+   c3_p0_wr_count                          : out std_logic_vector(6 downto 0);
+   c3_p0_wr_underrun                       : out std_logic;
+   c3_p0_wr_error                          : out std_logic;
+   c3_p0_rd_clk                            : in std_logic;
+   c3_p0_rd_en                             : in std_logic;
+   c3_p0_rd_data                           : out std_logic_vector(C3_P0_DATA_PORT_SIZE - 1 downto 0);
+   c3_p0_rd_full                           : out std_logic;
+   c3_p0_rd_empty                          : out std_logic;
+   c3_p0_rd_count                          : out std_logic_vector(6 downto 0);
+   c3_p0_rd_overflow                       : out std_logic;
+   c3_p0_rd_error                          : out std_logic;
+   c3_p2_cmd_clk                           : in std_logic;
+   c3_p2_cmd_en                            : in std_logic;
+   c3_p2_cmd_instr                         : in std_logic_vector(2 downto 0);
+   c3_p2_cmd_bl                            : in std_logic_vector(5 downto 0);
+   c3_p2_cmd_byte_addr                     : in std_logic_vector(29 downto 0);
+   c3_p2_cmd_empty                         : out std_logic;
+   c3_p2_cmd_full                          : out std_logic;
+   c3_p2_rd_clk                            : in std_logic;
+   c3_p2_rd_en                             : in std_logic;
+   c3_p2_rd_data                           : out std_logic_vector(31 downto 0);
+   c3_p2_rd_full                           : out std_logic;
+   c3_p2_rd_empty                          : out std_logic;
+   c3_p2_rd_count                          : out std_logic_vector(6 downto 0);
+   c3_p2_rd_overflow                       : out std_logic;
+   c3_p2_rd_error                          : out std_logic
+  );
+end component;
 
 type bstate_type is (idle, start, read1);
 
@@ -316,6 +406,7 @@ begin
 
   apbo.pindex <= pindex;
   apbo.pconfig <= pconfig;
+  apbo.pirq <= (others => '0');
 
   regs : process(clk_amba)
   begin
@@ -391,6 +482,12 @@ begin
     ahbmi.hresp <= "00";
     ahbmi.hgrant <= (others => '1');
     ahbmi.hready <= r2.hready;
+    ahbmi.hcache <= '1';
+    ahbmi.testen <= '0';
+    ahbmi.testrst <= '0';
+    ahbmi.scanen <= '0';
+    ahbmi.testoen <= '0';
+    ahbmi.hirq <= (others => '0');
 
     regs : process(clk_amba)
     begin
@@ -406,13 +503,13 @@ begin
     p2.rd_en <= '0';
   end generate;
 
-  MCB_inst : entity work.mig_37 generic map(
+  MCB_inst : mig_37 generic map(
 
    C3_P0_MASK_SIZE         => 4,
    C3_P0_DATA_PORT_SIZE    => 32,
    C3_P1_MASK_SIZE         => 4,
    C3_P1_DATA_PORT_SIZE    => 32,
-   C3_MEMCLK_PERIOD        => 5000,
+   C3_MEMCLK_PERIOD        => 4000,
    C3_RST_ACT_LOW          =>   1,
 --   C3_INPUT_CLK_TYPE       => "DIFFERENTIAL",
    C3_CALIB_SOFT_IP        => "TRUE",
@@ -422,7 +519,8 @@ begin
    C3_MEM_ADDR_ORDER       => "BANK_ROW_COLUMN",
    C3_NUM_DQ_PINS          => 16,
    C3_MEM_ADDR_WIDTH       => 13,
-   C3_MEM_BANKADDR_WIDTH   => 3 
+   C3_MEM_BANKADDR_WIDTH   => 3,
+   C3_CLKOUT5_DIVIDE       => clkdiv
 --   C3_MC_CALIB_BYPASS      => "YES"
 
   )
@@ -447,6 +545,8 @@ begin
    c3_calib_done     => calib_done,
    c3_clk0           => open,
    c3_rst0           => open,
+   clk_125           => clk_125,
+   clkout5           => clkout5,
    mcb3_dram_dqs     => mcb3_dram_dqs,
    mcb3_dram_ck      => mcb3_dram_ck,
    mcb3_dram_ck_n    => mcb3_dram_ck_n,

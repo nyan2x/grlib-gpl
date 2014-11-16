@@ -9,8 +9,8 @@ UCF=leon3mp.ucf
 #UCF=leon3mp_gbit_usb.ucf
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=high
-XSTOPT=""
-ISEMAPOPT="-timing"
+XSTOPT=
+ISEMAPOPT=-timing
 VHDLSYNFILES=config.vhd clkgen_de2.vhd mypackage.vhd sdctrl16.vhd \
 	apblcd.vhd leon3mp.vhd
 VHDLSIMFILES= mt48lc16m16a2.vhd testbench.vhd

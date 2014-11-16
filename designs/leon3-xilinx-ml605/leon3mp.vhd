@@ -26,6 +26,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library grlib;
+use grlib.config.all;
 use grlib.amba.all;
 use grlib.stdlib.all;
 use grlib.devices.all;
@@ -37,6 +38,7 @@ use gaisler.memctrl.all;
 use gaisler.leon3.all;
 use gaisler.uart.all;
 use gaisler.misc.all;
+use gaisler.i2c.all;
 use gaisler.net.all;
 use gaisler.jtag.all;
 library esa;
@@ -451,7 +453,7 @@ begin
 ----------------------------------------------------------------------
   
   grace: if CFG_GRACECTRL = 1 generate
-    grace0 : gracectrl generic map (hindex => 7, hirq => 13,
+    grace0 : gracectrl generic map (hindex => 7, hirq => 10, mode => 2,
         haddr => 16#002#, hmask => 16#fff#, split => CFG_SPLIT)
       port map (rstn, clkm, clkace, ahbsi, ahbso(7), acei, aceo);
   end generate;
@@ -467,6 +469,7 @@ begin
     port map (sysace_mpce, aceo.cen); 
   sysace_d_pads : iopadv generic map (level => cmos, voltage => x25v, tech => padtech, width => 8)
     port map (sysace_d(7 downto 0), aceo.do(7 downto 0), aceo.doen, acei.di(7 downto 0)); 
+  acei.di(15 downto 8) <= (others => '0');
   sysace_mpoe_pad : outpad generic map (level => cmos, voltage => x25v, tech => padtech)
     port map (sysace_mpoe, aceo.oen);
   sysace_mpwe_pad : outpad generic map (level => cmos, voltage => x25v, tech => padtech)
@@ -556,7 +559,7 @@ begin
     svga0 : svgactrl generic map(memtech => memtech, pindex => 6, paddr => 6,
         hindex => CFG_NCPU+CFG_AHB_UART+CFG_AHB_JTAG, clk0 => 40000,
 	clk1 => 24000, clk2 => 20000, clk3 => 16000, burstlen => 4,
-                                 ahbaccsz => 64)
+                                 ahbaccsz => CFG_AHBDW)
        port map(rstn, clkm, clkvga, apbi, apbo(6), vgao, ahbmi, 
 		ahbmo(CFG_NCPU+CFG_AHB_UART+CFG_AHB_JTAG), clk_sel);
   end generate;

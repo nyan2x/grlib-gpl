@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ package gencomp is
 
 -- technologies and libraries
 
-constant NTECH : integer := 46;
+constant NTECH : integer := 47;
 type tech_ability_type is array (0 to NTECH) of integer;
 
 constant inferred    : integer := 0;
@@ -84,6 +84,7 @@ constant apa3e       : integer := 43;
 constant apa3l       : integer := 44;
 constant ut130       : integer := 45;
 constant ut90        : integer := 46;
+constant gf65        : integer := 47;
 
 constant DEFMEMTECH  : integer := inferred;
 constant DEFPADTECH  : integer := inferred;
@@ -108,11 +109,11 @@ constant regfile_3p_write_through : tech_ability_type :=
 	(rhumc => 1, ihp25 => 1, ihp25rh => 1, eclipse => 1, others => 0);
 
 constant regfile_3p_infer : tech_ability_type :=
-	(inferred => 1, rhumc => 1, ihp25 => 1, rhlib18t => 0,
+	(inferred => 1, rhumc => 1, ihp25 => 1, rhlib18t => 0, ut90 => 1,
 	 peregrine => 1, ihp25rh => 1, umc => 1, custom1 => 0, others => 0);
 
 constant syncram_2p_dest_rw_collision : tech_ability_type :=
-        (memartisan => 1, smic013 => 1, easic45 => 1, others => 0);
+        (memartisan => 1, smic013 => 1, easic45 => 1, ut130 => 1, others => 0);
 
 constant syncram_dp_dest_rw_collision : tech_ability_type :=
         (memartisan => 1, smic013 => 1, easic45 => 1, others => 0);
@@ -124,12 +125,12 @@ constant has_2pram : tech_ability_type :=
 	( atc18s => 0, umc => 0, rhumc => 0, ihp25 => 0, others => 1);
 
 constant has_dpram : tech_ability_type :=
-	(virtex => 1, virtex2 => 1, memvirage => 1, axcel => 1,
+	(virtex => 1, virtex2 => 1, memvirage => 1, axcel => 0,
 	 altera => 1, apa3 => 1, spartan3 => 1, virtex4 => 1,
 	 lattice => 1, spartan3e => 1, memartisan => 1, virtex5 => 1,
 	 custom1 => 1, stratix1 => 1, stratix2 => 1, stratix3 => 1,
 	 cyclone3 => 1, memvirage90 => 1, atc18rha => 1, smic013 => 1,
-	 tm65gpl => 1, axdsp => 1, spartan6 => 1, virtex6 => 1, 
+	 tm65gpl => 1, axdsp => 0, spartan6 => 1, virtex6 => 1, 
 	 actfus => 1, stratix4 => 1, easic45 => 1, apa3e => 1,
 	 apa3l => 1, ut90 => 1, others => 0);
 
@@ -184,7 +185,7 @@ constant has_techbuf : tech_ability_type :=
           spartan3 => 1, spartan3e => 1, axcel => 1, ut25 => 1,
 	  apa3 => 1, easic90 => 1, axdsp => 1, actfus => 1, 
 	  apa3e => 1, apa3l => 1, ut130 => 1, easic45 => 1,
-          ut90 => 1, spartan6 => 1, others => 0);
+          ut90 => 1, spartan6 => 1, virtex6 => 1, others => 0);
 
 constant has_tapsel : tech_ability_type :=
         ( virtex => 1, virtex2 => 1, virtex4 => 1, virtex5 => 1,
@@ -195,7 +196,7 @@ constant need_extra_sync_reset : tech_ability_type :=
 	(axcel => 1, atc18s => 1, ut25 => 1, rhumc => 1, tsmc90 => 1,
 	 rhlib18t => 1, atc18rha => 1, easic90 => 1, tm65gpl => 1,
          axdsp => 1, cmos9sf => 1, apa3 => 1, apa3e => 1, apa3l => 1,
-	 ut130 => 1, others => 0);
+	 ut130 => 1, easic45 => 1, others => 0);
 
 constant is_unisim : tech_ability_type :=
         ( virtex => 1, virtex2 => 1, virtex4 => 1, virtex5 => 1,
@@ -224,7 +225,7 @@ constant has_clkgen : tech_ability_type :=
 
 constant has_ddr2phy: tech_ability_type :=
   (inferred => 0, stratix2 => 1, stratix3 => 1, spartan3 => 1, 
-	easic90 => 1, spartan6 => 1, easic45 => 1, ut90 => 1,
+	easic90 => 1, spartan6 => 1, easic45 => 1, 
 	virtex4 => 1, virtex5 => 1, virtex6 => 1, others => 0);
 
 constant ddr2phy_builtin_pads: tech_ability_type := (
@@ -236,6 +237,9 @@ constant ddr2phy_builtin_pads: tech_ability_type := (
 
 constant ddr2phy_has_fbclk: tech_ability_type :=
   (inferred => 1, others => 0);
+
+constant ddrphy_has_fbclk: tech_ability_type :=
+  (others => 0);
 
 constant ddr2phy_has_reg: tech_ability_type :=
   (easic45 => 1, others => 0);
@@ -250,6 +254,20 @@ constant ddr2phy_refclk_type: tech_ability_type :=
 constant ddr2phy_has_datavalid: tech_ability_type :=
   (easic45 => 1,
    others => 0);
+
+constant ddrphy_has_datavalid: tech_ability_type :=
+  (ut90 => 1, others => 0);
+
+constant ddrphy_builtin_pads: tech_ability_type := (
+   inferred => 0,
+   -- Most techs have builtin pads for legacy reasons, can be converted if needed
+   others => 1);
+
+constant ddrphy_latency: tech_ability_type := (
+  -- extra read latency, only used when not datavalid signal is available
+  inferred => 1,
+  others => 0
+  );
 
 -- pragma translate_off
 
@@ -281,7 +299,7 @@ constant ddr2phy_has_datavalid: tech_ability_type :=
   st65gp    => "st65gp    ", easic45   => "nextreme2 ",
   cmos9sf   => "cmos9sf   ", apa3e     => "proasic3e ",
   apa3l     => "proasic3l ", ut130     => "ut130hbd  ",
-  ut90      => "ut90nhbd  ");
+  ut90      => "ut90nhbd  ", gf65      => "gf65g     ");
 
 -- pragma translate_on
 
@@ -394,12 +412,13 @@ constant dci      : integer := 5;
 
 -- 64-bit synchronous single-port ram with 32-bit write strobe
   component syncram64
-  generic (tech : integer := 0; abits : integer := 6; testen : integer := 0);
+  generic (tech : integer := 0; abits : integer := 6; testen : integer := 0;
+	   paren : integer := 0);
   port (
     clk     : in  std_ulogic;
     address : in  std_logic_vector (abits -1 downto 0);
-    datain  : in  std_logic_vector (63 downto 0);
-    dataout : out std_logic_vector (63 downto 0);
+    datain  : in  std_logic_vector (63+8*paren downto 0);
+    dataout : out std_logic_vector (63+8*paren downto 0);
     enable  : in  std_logic_vector (1 downto 0);
     write   : in  std_logic_vector (1 downto 0);
     testin   : in std_logic_vector(3 downto 0) := "0000");
@@ -407,12 +426,13 @@ constant dci      : integer := 5;
 
 -- 128-bit synchronous single-port ram with 32-bit write strobe
   component syncram128
-  generic (tech : integer := 0; abits : integer := 6; testen : integer := 0);
+  generic (tech : integer := 0; abits : integer := 6; testen : integer := 0;
+	   paren : integer := 0);
   port (
     clk     : in  std_ulogic;
     address : in  std_logic_vector (abits -1 downto 0);
-    datain  : in  std_logic_vector (127 downto 0);
-    dataout : out std_logic_vector (127 downto 0);
+    datain  : in  std_logic_vector (127+16*paren downto 0);
+    dataout : out std_logic_vector (127+16*paren downto 0);
     enable  : in  std_logic_vector (3 downto 0);
     write   : in  std_logic_vector (3 downto 0);
     testin   : in std_logic_vector(3 downto 0) := "0000");
@@ -620,7 +640,8 @@ component odpad
   generic (tech : integer := 0; level : integer := 0; slew : integer := 0;
 	   voltage : integer := x33v; strength : integer := 12;
 	   oepol : integer := 0);
-  port (pad : out std_ulogic; i : in std_ulogic);
+  port (pad : out std_ulogic; i : in std_ulogic;
+        cfgi: in std_logic_vector(19 downto 0) := "00000000000000000000");
 end component;
 
 component odpadv
@@ -629,7 +650,8 @@ component odpadv
 	   oepol : integer := 0);
   port (
     pad : out std_logic_vector(width-1 downto 0);
-    i   : in  std_logic_vector(width-1 downto 0));
+    i   : in  std_logic_vector(width-1 downto 0);
+    cfgi: in std_logic_vector(19 downto 0) := "00000000000000000000");
 end component;
 
 component toutpad
@@ -1097,11 +1119,13 @@ component ddrphy
   generic (tech : integer := virtex2; MHz : integer := 100;
 	rstdelay : integer := 200; dbits : integer := 16;
 	clk_mul : integer := 2 ; clk_div : integer := 2;
-	rskew : integer :=0; mobile : integer := 0);
+	rskew : integer :=0; mobile : integer := 0;
+        abits: integer := 14; nclk: integer := 3; ncs: integer := 2);
   port (
     rst       : in  std_ulogic;
     clk       : in  std_logic;          	-- input clock
     clkout    : out std_ulogic;			-- system clock
+    clkoutret : in  std_ulogic;                 -- system clock return
     clkread   : out std_ulogic;			-- read clock
     lock      : out std_ulogic;			-- DCM locked
     ddr_clk 	: out std_logic_vector(2 downto 0);
@@ -1133,7 +1157,60 @@ component ddrphy
     csn       	: in  std_logic_vector(1 downto 0);
     cke       	: in  std_logic_vector(1 downto 0);
     ck          : in  std_logic_vector(2 downto 0);
-    moben       : in  std_logic);
+    moben       : in  std_logic;
+    dqvalid     : out std_ulogic);
+end component;
+
+component ddrphy_wo_pads
+  generic (tech : integer := virtex2; MHz : integer := 100; 
+	rstdelay : integer := 200; dbits : integer := 16; 
+	clk_mul : integer := 2; clk_div : integer := 2;
+        rskew : integer := 0; mobile: integer := 0;
+        abits       : integer := 14;   nclk: integer := 3; ncs: integer := 2);
+  port (
+    rst            : in    std_ulogic;
+    clk            : in    std_logic;   -- input clock
+    clkout         : out   std_ulogic;  -- system clock
+    clkoutret      : in  std_ulogic;         -- system clock returned
+    clkread        : out   std_ulogic;
+    lock           : out   std_ulogic;  -- DCM locked
+
+    ddr_clk        : out   std_logic_vector(nclk-1 downto 0);
+    ddr_clkb       : out   std_logic_vector(nclk-1 downto 0);
+    ddr_clk_fb_out : out   std_logic;
+    ddr_clk_fb     : in    std_logic;
+    ddr_cke        : out   std_logic_vector(ncs-1 downto 0);
+    ddr_csb        : out   std_logic_vector(ncs-1 downto 0);
+    ddr_web        : out   std_ulogic;  -- ddr write enable
+    ddr_rasb       : out   std_ulogic;  -- ddr ras
+    ddr_casb       : out   std_ulogic;  -- ddr cas
+    ddr_dm         : out   std_logic_vector (dbits/8-1 downto 0);    -- ddr dm
+    ddr_dqs_in     : in    std_logic_vector (dbits/8-1 downto 0);    -- ddr dqs
+    ddr_dqs_out    : out   std_logic_vector (dbits/8-1 downto 0);    -- ddr dqs
+    ddr_dqs_oen    : out   std_logic_vector (dbits/8-1 downto 0);    -- ddr dqs
+    ddr_ad         : out   std_logic_vector (abits-1 downto 0);           -- ddr address
+    ddr_ba         : out   std_logic_vector (1 downto 0); -- ddr bank address
+    ddr_dq_in      : in    std_logic_vector (dbits-1 downto 0);      -- ddr data
+    ddr_dq_out     : out   std_logic_vector (dbits-1 downto 0);      -- ddr data
+    ddr_dq_oen     : out   std_logic_vector (dbits-1 downto 0);      -- ddr data
+
+    addr           : in    std_logic_vector (abits-1 downto 0);
+    ba             : in    std_logic_vector (1 downto 0);
+    dqin           : out   std_logic_vector (dbits*2-1 downto 0);  -- ddr output data
+    dqout          : in    std_logic_vector (dbits*2-1 downto 0);  -- ddr input data
+    dm             : in    std_logic_vector (dbits/4-1 downto 0);  -- data mask
+    oen            : in    std_ulogic;
+    dqs            : in    std_ulogic;
+    dqsoen         : in    std_ulogic;
+    rasn           : in    std_ulogic;
+    casn           : in    std_ulogic;
+    wen            : in    std_ulogic;
+    csn            : in    std_logic_vector(ncs-1 downto 0);
+    cke            : in    std_logic_vector(ncs-1 downto 0);
+    ck             : in    std_logic_vector(2 downto 0);
+    moben          : in  std_logic;    
+    dqvalid        : out   std_ulogic
+    );
 end component;
 
 component ddr2phy
@@ -1343,6 +1420,57 @@ component ddr2pads is
     );
 end component;
 
+component ddrpads is
+  generic (tech: integer := virtex5; 
+           dbits: integer := 16;
+           abits: integer := 14;
+           nclk: integer := 3;
+           ncs: integer := 2;
+           ctrl2en: integer := 0);
+  port (
+    ddr_clk        : out   std_logic_vector(nclk-1 downto 0);
+    ddr_clkb       : out   std_logic_vector(nclk-1 downto 0);
+    ddr_clk_fb_out : out   std_logic;
+    ddr_clk_fb     : in    std_logic;
+    ddr_cke        : out   std_logic_vector(ncs-1 downto 0);
+    ddr_csb        : out   std_logic_vector(ncs-1 downto 0);
+    ddr_web        : out   std_ulogic;  -- ddr write enable
+    ddr_rasb       : out   std_ulogic;  -- ddr ras
+    ddr_casb       : out   std_ulogic;  -- ddr cas
+    ddr_dm         : out   std_logic_vector (dbits/8-1 downto 0);    -- ddr dm
+    ddr_dqs        : inout std_logic_vector (dbits/8-1 downto 0);    -- ddr dqs
+    ddr_ad         : out   std_logic_vector (abits-1 downto 0);           -- ddr address
+    ddr_ba         : out   std_logic_vector (1 downto 0); -- ddr bank address
+    ddr_dq         : inout std_logic_vector (dbits-1 downto 0);      -- ddr data
+
+    -- Copy of control signals for 2nd DIMM (if ctrl2en /= 0)
+    ddr_web2       : out std_ulogic;                               -- ddr write enable
+    ddr_rasb2      : out std_ulogic;                               -- ddr ras
+    ddr_casb2      : out std_ulogic;                               -- ddr cas
+    ddr_ad2        : out std_logic_vector (abits-1 downto 0);           -- ddr address
+    ddr_ba2        : out std_logic_vector (1 downto 0); -- ddr bank address        
+    
+    lddr_clk        : in    std_logic_vector(nclk-1 downto 0);
+    lddr_clkb       : in    std_logic_vector(nclk-1 downto 0);
+    lddr_clk_fb_out : in    std_logic;
+    lddr_clk_fb     : out   std_logic;
+    lddr_cke        : in    std_logic_vector(ncs-1 downto 0);
+    lddr_csb        : in    std_logic_vector(ncs-1 downto 0);
+    lddr_web        : in    std_ulogic;  -- ddr write enable
+    lddr_rasb       : in    std_ulogic;  -- ddr ras
+    lddr_casb       : in    std_ulogic;  -- ddr cas
+    lddr_dm         : in    std_logic_vector (dbits/8-1 downto 0);    -- ddr dm
+    lddr_dqs_in     : out   std_logic_vector (dbits/8-1 downto 0);    -- ddr dqs
+    lddr_dqs_out    : in    std_logic_vector (dbits/8-1 downto 0);    -- ddr dqs
+    lddr_dqs_oen    : in    std_logic_vector (dbits/8-1 downto 0);    -- ddr dqs
+    lddr_ad         : in    std_logic_vector (abits-1 downto 0);           -- ddr address
+    lddr_ba         : in    std_logic_vector (1 downto 0); -- ddr bank address
+    lddr_dq_in      : out   std_logic_vector (dbits-1 downto 0);      -- ddr data
+    lddr_dq_out     : in    std_logic_vector (dbits-1 downto 0);      -- ddr data
+    lddr_dq_oen     : in    std_logic_vector (dbits-1 downto 0)       -- ddr data
+    );
+end component;
+
 component ddrphy_datapath is
   generic (
     regtech: integer := 0;
@@ -1351,7 +1479,7 @@ component ddrphy_datapath is
     bankbits: integer range 2 to 3 := 2;
     ncs: integer;
     nclk: integer;
-    resync: integer range 0 to 1 := 0
+    resync: integer range 0 to 2 := 0
     );
   port (
     clk0: in std_ulogic;
@@ -1527,6 +1655,51 @@ component techmult
          en      : in std_logic;     
          sign    : in std_logic;     
          product : out std_logic_vector(a_width+b_width-1 downto 0));
+end component;
+
+-------------------------------------------------------------------------------
+-- SDRAM PHY
+-------------------------------------------------------------------------------
+
+component sdram_phy
+  generic (
+    tech     : integer := spartan3; 
+    oepol    : integer := 0;
+    level    : integer := 0;
+    voltage  : integer := x33v;
+    strength : integer := 12;
+    aw       : integer := 15;               -- # address bits
+    dw       : integer := 32;               -- # data bits
+    ncs      : integer := 2;
+    reg      : integer := 0);               -- 1: include registers on all signals
+  port (
+    -- SDRAM interface
+    addr      : out   std_logic_vector(aw-1 downto 0);
+    dq        : inout std_logic_vector(dw-1 downto 0);
+    cke       : out   std_logic_vector(ncs-1 downto 0);
+    sn        : out   std_logic_vector(ncs-1 downto 0);
+    wen       : out   std_ulogic;
+    rasn      : out   std_ulogic;
+    casn      : out   std_ulogic;
+    dqm       : out   std_logic_vector(dw/8-1 downto 0);
+    -- Interface toward memory controller
+    laddr     : in    std_logic_vector(aw-1 downto 0);
+    ldq_din   : out   std_logic_vector(dw-1 downto 0);
+    ldq_dout  : in    std_logic_vector(dw-1 downto 0);
+    ldq_oen   : in    std_logic;
+    lcke      : in    std_logic_vector(ncs-1 downto 0);
+    lsn       : in    std_logic_vector(ncs-1 downto 0);
+    lwen      : in    std_ulogic;
+    lrasn     : in    std_ulogic;
+    lcasn     : in    std_ulogic;
+    ldqm      : in    std_logic_vector(dw/8-1 downto 0);
+    -- Only used when reg generic is non-zero
+    rstn      : in  std_ulogic;         -- Registered pads reset
+    clk       : in  std_ulogic;         -- SDRAM clock for registered pads
+    -- Optional pad configuration inputs
+    cfgi_cmd  : in std_logic_vector(19 downto 0) := "00000000000000000000"; -- CMD pads
+    cfgi_dq   : in std_logic_vector(19 downto 0) := "00000000000000000000"  -- DQ pads
+  );
 end component;
 
 end;

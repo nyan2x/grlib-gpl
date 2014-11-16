@@ -51,7 +51,7 @@ entity spictrl_unisim is
 end spictrl_unisim;
 
 architecture rtl of spictrl_unisim is
-
+  
   -- Combination 0, 32 slave selects
   component spictrl_unisim_comb0
     port (

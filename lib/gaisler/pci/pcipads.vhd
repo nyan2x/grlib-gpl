@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -97,13 +97,13 @@ begin
     pci_req <= pcio.req when pcio.reqen = conv_std_logic(oepol=1) else '1';
   end generate localgnt;
   extgnt: if onchipreqgnt = 0 generate
-    pad_pci_gnt   : inpad generic map (padtech, pci33, 0) port map (pci_gnt, pcii.gnt);
+    pad_pci_gnt   : inpad generic map (padtech, pci33) port map (pci_gnt, pcii.gnt);
     pad_pci_req   : toutpad generic map (tech => padtech, level => pci33, oepol => oepol)
       port map (pci_req, pcio.req, pcio.reqen);
   end generate extgnt;
 
   idsel_pad: if constidsel = 0 generate
-    pad_pci_idsel : inpad generic map (padtech, pci33, 0) port map (pci_idsel, pcii.idsel);
+    pad_pci_idsel : inpad generic map (padtech, pci33) port map (pci_idsel, pcii.idsel);
   end generate idsel_pad;
   idsel_local: if constidsel /= 0 generate
     pcii.idsel <= pci_idsel;
@@ -113,14 +113,14 @@ begin
     pcii.host <= '0';   -- Always host
   end generate;
   dohost : if host = 1 generate
-    pad_pci_host  : inpad generic map (padtech, pci33, 0) port map (pci_host, pcii.host);
+    pad_pci_host  : inpad generic map (padtech, pci33) port map (pci_host, pcii.host);
   end generate;
   nohost : if host = 0 generate
     pcii.host <= '1';	-- disable pci host functionality
   end generate;
   
   do66 : if no66 = 0 generate
-    pad_pci_66    : inpad generic map (padtech, pci33, 0) port map (pci_66, pcii.pci66);
+    pad_pci_66    : inpad generic map (padtech, pci33) port map (pci_66, pcii.pci66);
   end generate;
   dono66 : if no66 = 1 generate
     pcii.pci66 <= '0';

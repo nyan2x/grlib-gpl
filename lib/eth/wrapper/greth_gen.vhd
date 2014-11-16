@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -126,7 +126,8 @@ entity greth_gen is
     testen         : in   std_ulogic;
     edcladdr       : in   std_logic_vector(3 downto 0);
     edclsepahb     : in   std_ulogic;
-    edcldisable    : in   std_ulogic
+    edcldisable    : in   std_ulogic;
+    speed          : out  std_ulogic
   );
 end entity;
   
@@ -291,7 +292,8 @@ begin
       testen         => testen,
       edcladdr       => edcladdr,
       edclsepahb     => edclsepahb,
-      edcldisable    => edcldisable);
+      edcldisable    => edcldisable,
+      speed          => speed);
 
 -------------------------------------------------------------------------------
 -- FIFOS ----------------------------------------------------------------------

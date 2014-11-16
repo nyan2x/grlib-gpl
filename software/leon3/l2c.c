@@ -30,9 +30,37 @@ struct l2c_regs {
  * l2c_enable(..)
  *
  * regaddr - L2C register base address
+ * ften    - Enable FT
  *
  */
 int l2c_enable(unsigned int regaddr, unsigned int ften)
+{
+  unsigned int ctrl;
+  struct l2c_regs *l2c;
+  
+  report_device(0x0104B000);
+
+  l2c = (struct l2c_regs*)regaddr;
+
+  report_subtest(1);
+  
+  // Flush and enable L2-Cache  
+  ctrl = l2c->ctrl;
+  if ((ctrl >> 31) == 0) {
+    l2c->flush_mem = 5;
+    l2c->ctrl = ctrl | (1<<31) | (ften << 30);
+  };
+  
+  return 0;
+}
+
+/*
+ * l2c_enable_wayflush(..)
+ *
+ * regaddr - L2C register base address
+ *
+ */
+int l2c_enable_wayflush(unsigned int regaddr, unsigned int ften, int nways)
 {
   int i;
   unsigned int ctrl;
@@ -44,10 +72,11 @@ int l2c_enable(unsigned int regaddr, unsigned int ften)
 
   report_subtest(1);
   
-  // Fluch and enable L2-Cache  
+  // Flush and enable L2-Cache  
   ctrl = l2c->ctrl;
   if ((ctrl >> 31) == 0) {
-    l2c->flush_mem = 5;
+    for (i = 0; i < nways; i++)
+       l2c->flush_dir = (i << 4) | 5;
     l2c->ctrl = ctrl | (1<<31) | (ften << 30);
   };
   
@@ -63,23 +92,6 @@ int l2c_enable(unsigned int regaddr, unsigned int ften)
  */
 int l2c_test(unsigned int memaddr, unsigned int regaddr)
 {
-  int i;
-  unsigned int ctrl;
-  struct l2c_regs *l2c;
-  
-  report_device(0x0104B000);
-
-  l2c = (struct l2c_regs*)regaddr;
-
-  report_subtest(1);
-  
-  // Fluch and enable L2-Cache  
-  ctrl = l2c->ctrl;
-  if (ctrl >> 31 == 0){
-    l2c->flush_mem = 5;
-    l2c->ctrl = ctrl | (1<<31);
-  };
-  
-  return 0;
+  l2c_enable(regaddr, 0);
 }
 

@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ use gaisler.memctrl.all;
 use gaisler.leon3.all;
 use gaisler.uart.all;
 use gaisler.misc.all;
+use gaisler.spi.all;
 use gaisler.net.all;
 use gaisler.jtag.all;
 library esa;

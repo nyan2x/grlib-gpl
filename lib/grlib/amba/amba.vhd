@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -420,7 +420,8 @@ type apb_config_type is array (0 to NAPBCFG-1) of amba_config_word;
     acdm        : integer := 0;  --AMBA compliant data muxing (for hsize > word)
     index       : integer := 0;  --index for trace print-out
     ahbtrace    : integer := 0;  --AHB trace enable
-    hwdebug     : integer := 0
+    hwdebug     : integer := 0;
+    fourgslv    : integer := 0
   );
   port (
     rst     : in  std_ulogic;
@@ -509,6 +510,46 @@ type apb_config_type is array (0 to NAPBCFG-1) of amba_config_word;
   component ahbdefmst
     generic ( hindex : integer range 0 to NAHBMST-1 := 0);
     port ( ahbmo  : out ahb_mst_out_type);
+  end component;
+
+  type ahb_dma_in_type is record
+    address         : std_logic_vector(31 downto 0);
+    wdata           : std_logic_vector(AHBDW-1 downto 0);
+    start           : std_ulogic;
+    burst           : std_ulogic;
+    write           : std_ulogic;
+    busy            : std_ulogic;
+    irq             : std_ulogic;
+    size            : std_logic_vector(2 downto 0);
+  end record;
+
+  type ahb_dma_out_type is record
+    start           : std_ulogic;
+    active          : std_ulogic;
+    ready           : std_ulogic;
+    retry           : std_ulogic;
+    mexc            : std_ulogic;
+    haddr           : std_logic_vector(9 downto 0);
+    rdata           : std_logic_vector(AHBDW-1 downto 0);
+  end record;
+
+  component ahbmst
+  generic (
+    hindex  : integer := 0;
+    hirq    : integer := 0;
+    venid   : integer := 1;
+    devid   : integer := 0;
+    version : integer := 0;
+    chprot  : integer := 3;
+    incaddr : integer := 0);
+   port (
+      rst  : in  std_ulogic;
+      clk  : in  std_ulogic;
+      dmai : in ahb_dma_in_type;
+      dmao : out ahb_dma_out_type;
+      ahbi : in  ahb_mst_in_type;
+      ahbo : out ahb_mst_out_type
+      );
   end component;
 
 -- pragma translate_off
@@ -1078,6 +1119,11 @@ package body amba is
   begin
     if en = '1' then ao <= ai;
     else ao <= ahbm_none; end if;
+    ao.haddr   <= ai.haddr;
+    ao.hwrite  <= ai.hwrite;
+    ao.hsize   <= ai.hsize;
+    ao.hprot   <= ai.hprot;
+    ao.hwdata  <= ai.hwdata;
     ao.hconfig <= ai.hconfig;
     ao.hindex  <= ai.hindex;
   end ahbmomux;
@@ -1089,6 +1135,7 @@ package body amba is
   begin
     if en = '1' then ao <= ai;
     else ao <= ahbs_none; end if;
+    ao.hrdata  <= ai.hrdata;
     ao.hconfig <= ai.hconfig;
     ao.hindex  <= ai.hindex;
   end ahbsomux;
@@ -1100,6 +1147,7 @@ package body amba is
   begin
     if en = '1' then ao <= ai;
     else ao <= apb_none; end if;
+    ao.prdata  <= ai.prdata;
     ao.pconfig <= ai.pconfig;
     ao.pindex  <= ai.pindex;
   end apbsomux;

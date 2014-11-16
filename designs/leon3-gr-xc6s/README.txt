@@ -33,12 +33,11 @@ Design specifics
 * System reset is mapped to the CPU RESET button
 
 * The AHB and processor is clocked from the 50 MHz clock, while
-  the DDR2 controller runs at 200 MHz.
+  the DDR2 controller runs at 250 MHz (DDR2-500).
 
 * The GRETH core is enabled and runs without problems at 100 Mbit.
   Ethernet debug link is enabled and has IP 192.168.0.51.
-  1 Gbit operation is also possible (requires grlib com release),
-  uncomment related timing constraints in the leon3mp.ucf first.
+  1 Gbit operation is also possible (requires grlib com release).
 
 * 8-bit flash prom can be read at address 0. It can be programmed
   with GRMON version 1.1.16 or later.
@@ -66,6 +65,12 @@ Design specifics
 
 * The JTAG DSU interface is enabled and accesible via the USB/JTAG port.
   Start grmon with -xilusb to connect.
+
+* The four LEDS (D1 - D4) are mapped as follows:
+
+  D1:     Debug mode
+  D2:     Cpu halted due to error
+  D4:D3   Ethernet speed. 00=10M, 01=100M, 10=1G
 
 * Output from GRMON is:
 

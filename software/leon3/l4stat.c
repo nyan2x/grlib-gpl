@@ -44,6 +44,7 @@ void l4stat_test(unsigned int addr)
 
         report_device(0x01047000);
 
+        *ctrl = 0; /* Initialize before reading # counters */
         ncnt = ((*ctrl >>  L4STAT_CTRL_NCNT) & L4STAT_CTRL_NCPU_MSK) + 1;
         
         /* Loop through all counters */

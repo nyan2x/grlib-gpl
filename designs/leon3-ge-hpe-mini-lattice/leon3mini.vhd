@@ -33,6 +33,7 @@ library techmap;
 use techmap.gencomp.all;
 library gaisler;
 use gaisler.memctrl.all;
+use gaisler.ddrpkg.all;
 use gaisler.leon3.all;
 use gaisler.uart.all;
 use gaisler.misc.all;
@@ -208,6 +209,9 @@ architecture rtl of leon3mini is
 
   constant blength   : integer := 12;
   constant fifodepth : integer := 8;
+  constant CFG_MULTIIO : integer := 0;
+  constant CFG_AHB2HPI : integer := 0;
+  constant CFG_DAC_AHB : integer := 0;
 
   signal vcc, gnd   : std_logic_vector(4 downto 0);
   signal memi       : memory_in_type;

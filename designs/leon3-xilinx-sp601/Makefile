@@ -9,7 +9,7 @@ UCF=$(TOP).ucf
 #ISEMAPOPT=-timing
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=high
-XSTOPT="-uc leon3mp.xcf"
+XSTOPT=-uc leon3mp.xcf
 SYNPOPT="set_option -pipe 1; set_option -retiming 1; set_option -write_apr_constraint 0"
 
 VHDLOPTSYNFILES= mig37/mig_37/user_design/rtl/iodrp_controller.vhd \
@@ -34,7 +34,7 @@ TECHLIBS = secureip unisim
 LIBSKIP = core1553bbc core1553brm core1553brt gr1553 corePCIF \
 	tmtc openchip ihp gleichmann usbhc spw
 DIRSKIP = b1553 pcif leon2 leon2ft crypto satcan pci leon3ft ambatest can \
-	usb grusbhc spacewire ata haps coremp7 ascs slink spi hcan \
+	usb grusbhc spacewire ata haps coremp7 ascs slink hcan \
 	leon4 leon4b64 l2cache pwm gr1553b iommu
 FILEADD=MCB.vhd
 FILESKIP = grcan.vhd

@@ -1,3 +1,63 @@
+2012-08-09	SPICTRL: Fix transmit queue race condition introduced in 
+		1.1.0-b4108 that could result in corrupted transmit data.
+
+2012-07-20	GRGPIO: irqgen=2,3,4 led to all irqmap registers getting
+		the same value on writes.
+
+2012-07-11	I-cache flush via ASI 0x10 was a no-op for systems
+		implemented without MMU.
+
+2012-06-26      DDRSPA,DDR2SPA: Move reset delay from phy to controller.
+
+2012-06-15      DDRSPA,DDR2SPA: Remove the internal fast generic, use read
+                counters to get correct behavior for all speed ratios with the
+                same controller. 
+
+2012-05-10      DDRSPA,DDR2SPA: Moved ddr2spa and ddrspa components into their 
+                own package ddrpkg. Make older versions of ddr controllers 
+                available again under ddrv1 directory. 
+
+                DDRSPA: Re-implemented to use the same structure as DDR2SPA. 
+                DDRSPA: Add support for control signal timing up to DDR400.
+
+2012-04-30	SPIMCTRL: Allow user to specify address offset for SPI device.
+
+2012-04-25	leon3-gr-xc6: RGMII interface did not work with 10/100 MAC.
+
+2012-04-24	leon3-xilinx-sp601: USB/UART had swapped RX/TX signals. 
+
+2012-04-12	Merged Xilinx ML505 - ML509 template designs into the design
+		leon3-xilinx-ml50x and added option to use the DDR2 MIG.
+
+2012-04-11	Added template design for TerASIC DE0-Nano board
+		(leon3-terasic-de0-nano)
+
+----------------------- Release 1.1.0-b4114 ----------------------------
+
+2012-03-19	Automatically perform "vsim-fix" when generating ModelSim
+		scripts to avoid issues with ':' in paths in Cygwin.
+
+2012-03-05	GRACECTRL: Emulate 16-bit mode for 8-bit MPU interface.
+		Enable core for Xilinx ML605 and SP605 template designs.
+
+2012-02-28	LEON3/4: Corrected documentation on cache flush ASIs.
+
+----------------------- Release 1.1.0-b4113 ----------------------------
+
+2012-01-18	Added template design for ZTEX USB-FPGA Module 1.15
+		(leon3-ztex-ufm-115). Renamed leon3-ztex-ufm-xc6slx25 to
+		leon3-ztex-ufm-111.
+
+2012-01-10	Moved I2C and SPI cores to separate directories.
+
+----------------------- Release 1.1.0-b4112 ----------------------------
+
+2012-01-02	Added template design for Xilinx SP605 board
+
+2011-12-29	Added template design for ZTEX USB-FPGA Module 1.11
+		(leon3-ztex-ufm-xc6slx25)
+
+2011-12-28	Added SPI to AHB bridge (SPI2AHB) core
 
 ----------------------- Release 1.1.0-b4111 ----------------------------
 

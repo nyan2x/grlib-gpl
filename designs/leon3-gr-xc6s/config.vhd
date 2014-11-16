@@ -19,8 +19,8 @@ package config is
   constant CFG_SCAN : integer := 0;
 -- Clock generator
   constant CFG_CLKTECH : integer := spartan6;
-  constant CFG_CLKMUL : integer := (5);
-  constant CFG_CLKDIV : integer := (5);
+  constant CFG_CLKMUL : integer := (2);
+  constant CFG_CLKDIV : integer := (2);
   constant CFG_OCLKDIV : integer := 1;
   constant CFG_OCLKBDIV : integer := 0;
   constant CFG_OCLKCDIV : integer := 0;
@@ -40,13 +40,13 @@ package config is
   constant CFG_NOTAG : integer := 1;
   constant CFG_NWP : integer := (2);
   constant CFG_PWD : integer := 1*2;
-  constant CFG_FPU : integer := 0 + 16*0;
+  constant CFG_FPU : integer := 0 + 16*0 + 32*0;
   constant CFG_GRFPUSH : integer := 0;
   constant CFG_ICEN : integer := 1;
   constant CFG_ISETS : integer := 2;
   constant CFG_ISETSZ : integer := 8;
   constant CFG_ILINE : integer := 8;
-  constant CFG_IREPL : integer := 0;
+  constant CFG_IREPL : integer := 2;
   constant CFG_ILOCK : integer := 0;
   constant CFG_ILRAMEN : integer := 0;
   constant CFG_ILRAMADDR: integer := 16#8E#;
@@ -55,9 +55,9 @@ package config is
   constant CFG_DSETS : integer := 2;
   constant CFG_DSETSZ : integer := 4;
   constant CFG_DLINE : integer := 4;
-  constant CFG_DREPL : integer := 0;
+  constant CFG_DREPL : integer := 2;
   constant CFG_DLOCK : integer := 0;
-  constant CFG_DSNOOP : integer := 1 + 0 + 4*0;
+  constant CFG_DSNOOP : integer := 1 + 1 + 4*1;
   constant CFG_DFIXED : integer := 16#0#;
   constant CFG_DLRAMEN : integer := 0;
   constant CFG_DLRAMADDR: integer := 16#8F#;
@@ -84,6 +84,7 @@ package config is
   constant CFG_DEFMST : integer := (0);
   constant CFG_RROBIN : integer := 1;
   constant CFG_SPLIT : integer := 0;
+  constant CFG_FPNPEN : integer := 0;
   constant CFG_AHBIO : integer := 16#FFF#;
   constant CFG_APBADDR : integer := 16#800#;
   constant CFG_AHB_MON : integer := 0;
@@ -100,9 +101,9 @@ package config is
   constant CFG_GRUSB_DCL_DW : integer := 8;
 -- Ethernet DSU
   constant CFG_DSU_ETH : integer := 1 + 0 + 0;
-  constant CFG_ETH_BUF : integer := 2;
+  constant CFG_ETH_BUF : integer := 16;
   constant CFG_ETH_IPM : integer := 16#C0A8#;
-  constant CFG_ETH_IPL : integer := 16#0033#;
+  constant CFG_ETH_IPL : integer := 16#003B#;
   constant CFG_ETH_ENM : integer := 16#020765#;
   constant CFG_ETH_ENL : integer := 16#003456#;
 -- LEON2 memory controller
@@ -121,6 +122,8 @@ package config is
   constant CFG_DDR2SP_FREQ : integer := 100;
   constant CFG_DDR2SP_TRFC : integer := 130;
   constant CFG_DDR2SP_DATAWIDTH : integer := 64;
+  constant CFG_DDR2SP_FTEN : integer := 0;
+  constant CFG_DDR2SP_FTWIDTH : integer := 0;
   constant CFG_DDR2SP_COL : integer := 9;
   constant CFG_DDR2SP_SIZE : integer := 8;
   constant CFG_DDR2SP_DELAY0 : integer := 0;
@@ -132,6 +135,13 @@ package config is
   constant CFG_DDR2SP_DELAY6 : integer := 0;
   constant CFG_DDR2SP_DELAY7 : integer := 0;
   constant CFG_DDR2SP_NOSYNC : integer := 0;
+-- Xilinx MIG
+  constant CFG_MIG_DDR2 : integer := 1;
+  constant CFG_MIG_RANKS : integer := (1);
+  constant CFG_MIG_COLBITS : integer := (10);
+  constant CFG_MIG_ROWBITS : integer := (13);
+  constant CFG_MIG_BANKBITS: integer := (2);
+  constant CFG_MIG_HMASK : integer := 16#F00#;
 -- AHB status register
   constant CFG_AHBSTAT : integer := 1;
   constant CFG_AHBSTATN : integer := (1);
@@ -141,10 +151,12 @@ package config is
   constant CFG_AHBRODDR : integer := 16#000#;
   constant CFG_ROMADDR : integer := 16#000#;
   constant CFG_ROMMASK : integer := 16#E00# + 16#000#;
+
 -- AHB RAM
   constant CFG_AHBRAMEN : integer := 0;
   constant CFG_AHBRSZ : integer := 1;
   constant CFG_AHBRADDR : integer := 16#A00#;
+
 -- Gaisler Ethernet core
   constant CFG_GRETH : integer := 1;
   constant CFG_GRETH1G : integer := 0;
@@ -298,6 +310,4 @@ package config is
 
 -- GRLIB debugging
   constant CFG_DUART : integer := 0;
--- Xilinx MIG DDR2 controller
-  constant CFG_MIG_DDR2 : integer := 1;
 end;

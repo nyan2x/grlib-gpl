@@ -407,11 +407,10 @@ CONFIG_IUFT_NONE
   sparing, 7-bit BCH and TMR.
 
 FPU Register file protection
-CONFIG_FPUFT_EN
+CONFIG_FPUFT_NONE
   Say Y to enable SEU protection of the FPU register file.
-  The GRFPU will be protected using 8-bit parity without restart, while
-  the GRFPU-Lite will be protected with 4-bit parity with restart. If
-  disabled the FPU register file will be implemented using flip-flops.
+  The GRFPU-Lite will be protected with parity, PDMR and TMR.
+  The GRFPU can use PDMR or TMR only.
 
 Cache memory error injection
 CONFIG_RF_ERRINJ

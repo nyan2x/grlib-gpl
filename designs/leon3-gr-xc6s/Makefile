@@ -7,10 +7,22 @@ include $(GRLIB)/boards/$(BOARD)/Makefile.inc
 DEVICE=$(PART)-$(PACKAGE)$(SPEED)
 #UCF=$(GRLIB)/boards/$(BOARD)/$(TOP).ucf
 UCF=leon3mp.ucf
+ifeq ("$(CONFIG_SPW_ENABLE)","y")
+UCF+=spacewire.ucf
+endif
+ifeq ("$(CONFIG_GRUSBHC_ENABLE)","y")
+UCF+=usb.ucf
+endif
+ifeq ("$(CONFIG_GRUSBDC_ENABLE)","y")
+UCF+=usb.ucf
+endif
+ifeq ("$(CONFIG_GRUSB_DCL)","y")
+UCF+=usb.ucf
+endif
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=high
-ISEMAPOPT="-timing"
-XSTOPT=""
+ISEMAPOPT=-timing
+XSTOPT=
 SYNPOPT="set_option -maxfan 100; set_option -pipe 1; set_option -retiming 1; set_option -write_apr_constraint 0"
 VHDLOPTSYNFILES= mig37/mig_37/user_design/rtl/iodrp_controller.vhd \
 	mig37/mig_37/user_design/rtl/iodrp_mcb_controller.vhd \
@@ -34,10 +46,9 @@ TECHLIBS = secureip unisim
 
 LIBSKIP = core1553bbc core1553brm core1553brt gr1553 corePCIF \
 	tmtc openchip cypress ihp gleichmann gsi fmf spansion micron
-DIRSKIP = b1553 pcif leon2 leon2ft crypto satcan pci leon3ft ambatest ddr \
+DIRSKIP = b1553 pcif leon2 leon2ft crypto satcan pci ambatest ddr \
 	leon4 leon4b64 l2cache gr1553b iommu haps ascs slink coremp7 pwm \
 	ac97 hcan
-DIRADD = leon3ftv2
 FILEADD = MCB.vhd
 FILESKIP = grcan.vhd
 

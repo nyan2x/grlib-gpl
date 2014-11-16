@@ -657,6 +657,10 @@
 #define CONFIG_AHB_RROBIN 0
 #endif
 
+#ifndef CONFIG_AHB_FPNPEN
+#define CONFIG_AHB_FPNPEN 0
+#endif
+
 #ifndef CONFIG_AHB_IOADDR
 #define CONFIG_AHB_IOADDR FFF
 #endif
@@ -888,6 +892,10 @@
 
 #ifndef CONFIG_DDR2SP_FTEN
 #define CONFIG_DDR2SP_FTEN 0
+#endif
+
+#ifndef CONFIG_DDR2SP_FTWIDTH
+#define CONFIG_DDR2SP_FTWIDTH 0
 #endif
 #ifndef CONFIG_AHBSTAT_ENABLE
 #define CONFIG_AHBSTAT_ENABLE  0

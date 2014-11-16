@@ -6,8 +6,8 @@ include $(GRLIB)/boards/$(BOARD)/Makefile.inc
 DEVICE=$(PART)-$(PACKAGE)$(SPEED)
 UCF=$(GRLIB)/boards/$(BOARD)/default.ucf
 EFFORT=high
-XSTOPT=""
-ISEMAPOPT="-r"
+XSTOPT=
+ISEMAPOPT=-r
 SYNPOPT="set_option -pipe 0; set_option -retiming 0; set_option -write_apr_constraint 0; set_option -resource_sharing 1"
 VHDLSYNFILES=config.vhd wildfpga.vhd
 VHDLSIMFILES=
@@ -16,6 +16,7 @@ SDCFILE=$(GRLIB)/boards/$(BOARD)/default.sdc
 BITGEN=$(GRLIB)/boards/$(BOARD)/default.ut
 CLEAN=soft-clean
 
+TECHLIBS=unisim
 LIBSKIP=apa proasic3 axcelerator ecaltera altera_mf stratixii ec altera \
         eclipsee cycloneiii virage atc18 umc18 dw02 spw usbhc eth gleichmann \
         fmf spansion gsi cypress hynix ihp25 sgb25vrh ut025crh rh_lib18t ihp \

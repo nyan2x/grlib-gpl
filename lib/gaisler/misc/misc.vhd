@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -245,47 +245,6 @@ package misc is
     tahbmiv : in  ahb_mst_in_vector_type(0 to ntrace-1);       -- Trace
     tahbsiv : in  ahb_slv_in_vector_type(0 to ntrace-1)
   );
-  end component;
-
-  
-  type ahb_dma_in_type is record
-    address         : std_logic_vector(31 downto 0);
-    wdata           : std_logic_vector(AHBDW-1 downto 0);
-    start           : std_ulogic;
-    burst           : std_ulogic;
-    write           : std_ulogic;
-    busy            : std_ulogic;
-    irq             : std_ulogic;
-    size            : std_logic_vector(2 downto 0);
-  end record;
-
-  type ahb_dma_out_type is record
-    start           : std_ulogic;
-    active          : std_ulogic;
-    ready           : std_ulogic;
-    retry           : std_ulogic;
-    mexc            : std_ulogic;
-    haddr           : std_logic_vector(9 downto 0);
-    rdata           : std_logic_vector(AHBDW-1 downto 0);
-  end record;
-
-  component ahbmst
-  generic (
-    hindex  : integer := 0;
-    hirq    : integer := 0;
-    venid   : integer := VENDOR_GAISLER;
-    devid   : integer := 0;
-    version : integer := 0;
-    chprot  : integer := 3;
-    incaddr : integer := 0);
-   port (
-      rst  : in  std_ulogic;
-      clk  : in  std_ulogic;
-      dmai : in ahb_dma_in_type;
-      dmao : out ahb_dma_out_type;
-      ahbi : in  ahb_mst_in_type;
-      ahbo : out ahb_mst_out_type
-      );
   end component;
 
   type ahbmst2_request is record
@@ -815,274 +774,6 @@ package misc is
          ado:        out   Analog_Out_Type);
    end component;
 
-  component grclkgate
-  generic (
-    pindex   : integer := 0;
-    paddr    : integer := 0;
-    pmask    : integer := 16#fff#;
-    nbits    : integer := 16
-  );
-  port (
-    rst    : in  std_ulogic;
-    clk    : in  std_ulogic;
-    apbi   : in  apb_slv_in_type;
-    apbo   : out apb_slv_out_type;
-    clockdis  : out std_logic_vector(nbits-1 downto 0);
-    reset     : out std_logic_vector(nbits-1 downto 0)
-  );
-  end component;
-
-  -----------------------------------------------------------------------------
-  -- I2C types and components
-  -----------------------------------------------------------------------------
-
-  type i2c_in_type is record
-      scl : std_ulogic;
-      sda : std_ulogic;
-  end record;
-
-  type i2c_out_type is record
-      scl    : std_ulogic;
-      scloen : std_ulogic;
-      sda    : std_ulogic;
-      sdaoen : std_ulogic;
-      enable : std_ulogic;
-  end record;
-
-  -- AMBA wrapper for OC I2C-master
-  component i2cmst
-    generic (
-      pindex  : integer;
-      paddr   : integer;
-      pmask   : integer;
-      pirq    : integer;
-      oepol   : integer range 0 to 1 := 0;
-      filter  : integer range 2 to 512 := 2;
-      dynfilt : integer range 0 to 1 := 0
-      );
-    port (
-      rstn   : in  std_ulogic;
-      clk    : in  std_ulogic;
-      apbi   : in  apb_slv_in_type;
-      apbo   : out apb_slv_out_type;
-      i2ci   : in  i2c_in_type;
-      i2co   : out i2c_out_type
-    );
-  end component;
-
-  component i2cmst_gen
-    generic (
-      oepol  : integer range 0 to 1 := 0;
-      filter  : integer range 2 to 512 := 2;
-      dynfilt : integer range 0 to 1 := 0
-      );
-    port (
-      rstn        : in  std_ulogic;
-      clk         : in  std_ulogic;
-      psel        : in  std_ulogic;
-      penable     : in  std_ulogic;
-      paddr       : in  std_logic_vector(31 downto 0);
-      pwrite      : in  std_ulogic;
-      pwdata      : in  std_logic_vector(31 downto 0);
-      prdata      : out std_logic_vector(31 downto 0);
-      irq         : out std_logic;
-      i2ci_scl    : in  std_ulogic;
-      i2ci_sda    : in  std_ulogic;
-      i2co_scl    : out std_ulogic;
-      i2co_scloen : out std_ulogic;
-      i2co_sda    : out std_ulogic;
-      i2co_sdaoen : out std_ulogic;
-      i2co_enable : out std_ulogic
-      );
-  end component;
-
-  -- I2C slave
-  component i2cslv
-    generic (
-      pindex  : integer := 0;
-      paddr   : integer := 0;
-      pmask   : integer := 16#fff#;
-      pirq    : integer := 0;
-      hardaddr : integer range 0 to 1 := 0;
-      tenbit   : integer range 0 to 1 := 0;
-      i2caddr  : integer range 0 to 1023 := 0;
-      oepol    : integer range 0 to 1 := 0;
-      filter   : integer range 2 to 512 := 2
-      );
-    port (
-      rstn    : in  std_ulogic;
-      clk     : in  std_ulogic;
-      apbi    : in  apb_slv_in_type;
-      apbo    : out apb_slv_out_type;
-      i2ci    : in  i2c_in_type;
-      i2co    : out i2c_out_type
-      );
-  end component;
-
-  -- I2C to AHB bridge
-
-  type i2c2ahb_in_type is record
-    haddr   : std_logic_vector(31 downto 0);
-    hmask   : std_logic_vector(31 downto 0);
-    slvaddr : std_logic_vector(6 downto 0);
-    cfgaddr : std_logic_vector(6 downto 0);
-    en      : std_ulogic;
-  end record;
-
-  type i2c2ahb_out_type is record
-    dma     : std_ulogic;
-    wr      : std_ulogic;
-    prot    : std_ulogic;
-  end record;
-
-  component i2c2ahb
-    generic (
-      -- AHB Configuration
-      hindex     : integer := 0;
-      --
-      ahbaddrh   : integer := 0;
-      ahbaddrl   : integer := 0;
-      ahbmaskh   : integer := 0;
-      ahbmaskl   : integer := 0;
-      -- I2C configuration
-      i2cslvaddr : integer range 0 to 127 := 0;
-      i2ccfgaddr : integer range 0 to 127 := 0;
-      oepol      : integer range 0 to 1 := 0;
-      --
-      filter     : integer range 2 to 512 := 2
-      );
-    port (
-      rstn   : in  std_ulogic;
-      clk    : in  std_ulogic;
-      -- AHB master interface
-      ahbi   : in  ahb_mst_in_type;
-      ahbo   : out ahb_mst_out_type;
-      -- I2C signals
-      i2ci   : in  i2c_in_type;
-      i2co   : out i2c_out_type
-      );
-  end component;
-  
-  component i2c2ahb_apb
-    generic (
-      -- AHB Configuration
-      hindex     : integer := 0;
-      --
-      ahbaddrh   : integer := 0;
-      ahbaddrl   : integer := 0;
-      ahbmaskh   : integer := 0;
-      ahbmaskl   : integer := 0;
-      resen      : integer := 0;
-      -- APB configuration
-      pindex     : integer := 0;
-      paddr      : integer := 0;
-      pmask      : integer := 16#fff#;
-      pirq       : integer := 0;
-      -- I2C configuration
-      i2cslvaddr : integer range 0 to 127 := 0;
-      i2ccfgaddr : integer range 0 to 127 := 0;
-      oepol      : integer range 0 to 1 := 0;
-      --
-      filter     : integer range 2 to 512 := 2
-      );
-    port (
-      rstn   : in  std_ulogic;
-      clk    : in  std_ulogic;
-      -- AHB master interface
-      ahbi   : in  ahb_mst_in_type;
-      ahbo   : out ahb_mst_out_type;
-      --
-      apbi   : in  apb_slv_in_type;
-      apbo   : out apb_slv_out_type;
-      -- I2C signals
-      i2ci   : in  i2c_in_type;
-      i2co   : out i2c_out_type
-      );
-  end component;
-
-  component i2c2ahbx
-    generic (
-      -- AHB configuration
-      hindex   : integer := 0;
-      oepol    : integer range 0 to 1 := 0;
-      filter   : integer range 2 to 512 := 2
-      );
-    port (
-      rstn     : in  std_ulogic;
-      clk      : in  std_ulogic;
-      -- AHB master interface
-      ahbi     : in  ahb_mst_in_type;
-      ahbo     : out ahb_mst_out_type;
-      -- I2C signals
-      i2ci     : in  i2c_in_type;
-      i2co     : out i2c_out_type;
-      --
-      i2c2ahbi : in  i2c2ahb_in_type;
-      i2c2ahbo : out i2c2ahb_out_type
-      );
-  end component;
-
-  -----------------------------------------------------------------------------
-  -- SPI controller
-  -----------------------------------------------------------------------------
-  type spi_in_type is record
-    miso    : std_ulogic;
-    mosi    : std_ulogic;
-    sck     : std_ulogic;
-    spisel  : std_ulogic;
-    astart  : std_ulogic;
-  end record;
-
-  constant spi_in_none : spi_in_type := ('0', '0', '0', '0', '0');
-  
-  type spi_out_type is record
-    miso     : std_ulogic;
-    misooen  : std_ulogic;
-    mosi     : std_ulogic;
-    mosioen  : std_ulogic;
-    sck      : std_ulogic;
-    sckoen   : std_ulogic;
-    ssn      : std_logic_vector(7 downto 0);  -- used by GE/OC SPI core
-    enable   : std_ulogic;
-    astart   : std_ulogic;
-  end record;
-
-  constant spi_out_none : spi_out_type := ('0', '0', '0', '0', '0', '0',
-                                           (others => '0'), '0', '0');
-  
-  component spictrl
-    generic (
-      pindex   : integer := 0;
-      paddr    : integer := 0;
-      pmask    : integer := 16#fff#;
-      pirq     : integer := 0;
-      fdepth   : integer range 1 to 7       := 1;
-      slvselen : integer range 0 to 1       := 0;
-      slvselsz : integer range 1 to 32      := 1;
-      oepol    : integer range 0 to 1       := 0;
-      odmode   : integer range 0 to 1       := 0;
-      automode : integer range 0 to 1       := 0;
-      acntbits : integer range 1 to 32      := 32;
-      aslvsel  : integer range 0 to 1       := 0;
-      twen     : integer range 0 to 1       := 1;
-      maxwlen  : integer range 0 to 15      := 0;
-      netlist  : integer range 0 to NTECH   := 0;
-      syncram  : integer range 0 to 1       := 1;
-      memtech  : integer range 0 to NTECH   := 0;
-      ft       : integer range 0 to 2       := 0;
-      scantest : integer range 0 to 1       := 0
-      );
-    port (
-      rstn   : in std_ulogic;
-      clk    : in std_ulogic;
-      apbi   : in apb_slv_in_type;
-      apbo   : out apb_slv_out_type;
-      spii   : in  spi_in_type;
-      spio   : out spi_out_type;
-      slvsel : out std_logic_vector((slvselsz-1) downto 0)
-    );
-  end component;
-
   -----------------------------------------------------------------------------
   -- AMBA wrapper for System Monitor
   -----------------------------------------------------------------------------
@@ -1184,7 +875,8 @@ package misc is
     hmask   : integer := 16#fff#;        -- Area mask
     split   : integer range 0 to 1 := 0; -- Enable AMBA SPLIT support
     swap    : integer range 0 to 1 := 0;
-    oepol   : integer range 0 to 1 := 0  -- Output enable polarity
+    oepol   : integer range 0 to 1 := 0; -- Output enable polarity
+    mode    : integer range 0 to 2 := 0  -- 16/8-bit mode
     );
   port (
     rstn    : in  std_ulogic;
@@ -1303,8 +995,75 @@ package misc is
       msto        : out ahb_mst_iface_out_type
     );
   end component;
-  
-  
+
+  -----------------------------------------------------------------------------
+  -- Clock gate unit
+  -----------------------------------------------------------------------------
+  component grclkgate
+    generic (
+      tech     : integer := 0;
+      pindex   : integer := 0;
+      paddr    : integer := 0;
+      pmask    : integer := 16#fff#;
+      ncpu     : integer := 1;
+      nclks    : integer := 8;
+      emask    : integer := 0;
+      extemask : integer := 0;
+      scantest : integer := 0;
+      edges    : integer := 0;
+      noinv    : integer := 0; -- Do not use inverted clock on gate enable
+      fpush    : integer range 0 to 2 := 0);
+    port (
+      rst    : in  std_ulogic;
+      clkin  : in  std_ulogic;
+      pwd    : in  std_logic_vector(ncpu-1 downto 0);
+      fpen   : in  std_logic_vector(ncpu-1 downto 0);  -- Only used with shared FPU
+      apbi   : in  apb_slv_in_type;
+      apbo   : out apb_slv_out_type;
+      gclk   : out std_logic_vector(nclks-1 downto 0);
+      reset  : out std_logic_vector(nclks-1 downto 0);
+      clkahb : out std_ulogic;
+      clkcpu : out std_logic_vector(ncpu-1 downto 0);
+      enable : out std_logic_vector(nclks-1 downto 0);
+      clkfpu : out std_logic_vector((fpush/2)*(ncpu/2-1) downto 0); -- Only used with shared FPU
+      epwen  : in  std_logic_vector(nclks-1 downto 0));
+  end component;
+
+  component grclkgate2x
+    generic (
+      tech     : integer := 0;
+      pindex   : integer := 0;
+      paddr    : integer := 0;
+      pmask    : integer := 16#fff#;
+      ncpu     : integer := 1;
+      nclks    : integer := 8;
+      emask    : integer := 0;
+      extemask : integer := 0;
+      scantest : integer := 0;
+      edges    : integer := 0;
+      noinv    : integer := 0; -- Do not use inverted clock on gate enable
+      fpush    : integer range 0 to 2 := 0;
+      clk2xen  : integer := 0  -- Enable double clocking
+      );
+    port (
+      rst      : in  std_ulogic;
+      clkin    : in  std_ulogic;
+      clkin2x  : in std_ulogic;
+      pwd      : in  std_logic_vector(ncpu-1 downto 0);
+      fpen     : in  std_logic_vector(ncpu-1 downto 0);  -- Only used with shared FPU
+      apbi     : in  apb_slv_in_type;
+      apbo     : out apb_slv_out_type;
+      gclk     : out std_logic_vector(nclks-1 downto 0);
+      reset    : out std_logic_vector(nclks-1 downto 0);
+      clkahb   : out std_ulogic;
+      clkahb2x : out std_ulogic;
+      clkcpu   : out std_logic_vector(ncpu-1 downto 0);
+      enable   : out std_logic_vector(nclks-1 downto 0);
+      clkfpu   : out std_logic_vector((fpush/2)*(ncpu/2-1) downto 0); -- Only used with shared FPU
+      epwen    : in  std_logic_vector(nclks-1 downto 0)
+      );
+  end component;
+
   -----------------------------------------------------------------------------
   -- Function declarations
   -----------------------------------------------------------------------------

@@ -60,7 +60,7 @@ comment 'Peripherals             '
 
   mainmenu_option next_comment
   comment 'SPI                     '
-    source lib/gaisler/misc/spictrl.in
+    source lib/gaisler/spi/spictrl.in
   endmenu
 
   mainmenu_option next_comment

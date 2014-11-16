@@ -35,9 +35,12 @@ use gaisler.memctrl.all;
 use gaisler.leon3.all;
 use gaisler.uart.all;
 use gaisler.misc.all;
+use gaisler.spi.all;
+use gaisler.i2c.all;
 use gaisler.net.all;
 use gaisler.jtag.all;
 use gaisler.pci.all;
+use gaisler.ddrpkg.all;
 
 library esa;
 use esa.memoryctrl.all;
@@ -479,9 +482,6 @@ constant DDR_FREQ : integer :=
 constant IOAEN : integer := CFG_DDR2SP;
 
 signal stati : ahbstat_in_type;
-
-signal ddsi  : ddrmem_in_type;
-signal ddso  : ddrmem_out_type;
 
 signal ddr0_clkv 	: std_logic_vector(2 downto 0);
 signal ddr0_clkbv	: std_logic_vector(2 downto 0);

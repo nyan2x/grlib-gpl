@@ -6,7 +6,7 @@ DEVICE=$(PART)-$(PACKAGE)$(SPEED)
 UCF=$(GRLIB)/boards/$(BOARD)/$(TOP).ucf
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=std
-XSTOPT=""
+XSTOPT=
 SYNPOPT="set_option -pipe 1; set_option -retiming 1"
 VHDLSYNFILES=config.vhd ahbrom.vhd serializer.vhd altera_eek_clkgen.vhd \
 	leon3mp.vhd 

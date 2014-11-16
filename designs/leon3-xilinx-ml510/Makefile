@@ -1,13 +1,18 @@
+include .config
 GRLIB=../..
 TOP=leon3mp
 BOARD=xilinx-ml510-xc5vfx130t
 include $(GRLIB)/boards/$(BOARD)/Makefile.inc
 DEVICE=$(PART)-$(PACKAGE)$(SPEED)
+ifeq ("$(CONFIG_MIG_DDR2)","y")
 UCF=leon3mp_mig.ucf
-XSTOPT="-uc leon3mp.xcf"
+else
+UCF=leon3mp.ucf
+endif
+XSTOPT=-uc leon3mp.xcf
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=high
-ISEMAPOPT="-m -timing"
+ISEMAPOPT=-m -timing
 SYNPOPT="set_option -pipe 1; set_option -retiming 1; set_option -write_apr_constraint 0"
 VHDLOPTSYNFILES= \
 	mig_36_1/user_design/rtl/ddr2_chipscope.vhd \

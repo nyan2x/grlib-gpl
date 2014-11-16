@@ -2,14 +2,16 @@
   constant CFG_LEON3  	: integer := CONFIG_LEON3;
   constant CFG_NCPU 	: integer := CONFIG_PROC_NUM;
   constant CFG_NWIN 	: integer := CONFIG_IU_NWINDOWS;
-  constant CFG_V8   	: integer := CFG_IU_V8;
+  constant CFG_V8   	: integer := CFG_IU_V8 + 4*CFG_IU_MUL_STRUCT;
   constant CFG_MAC  	: integer := CONFIG_IU_MUL_MAC;
+  constant CFG_BP   	: integer := CONFIG_IU_BP;
   constant CFG_SVT  	: integer := CONFIG_IU_SVT;
   constant CFG_RSTADDR 	: integer := 16#CONFIG_IU_RSTADDR#;
   constant CFG_LDDEL	: integer := CONFIG_IU_LDELAY;
+  constant CFG_NOTAG	: integer := CONFIG_NOTAG;
   constant CFG_NWP  	: integer := CONFIG_IU_WATCHPOINTS;
   constant CFG_PWD 	: integer := CONFIG_PWD*2;
-  constant CFG_FPU 	: integer := CONFIG_FPU + 16*CONFIG_FPU_NETLIST;
+  constant CFG_FPU 	: integer := CONFIG_FPU + 16*CONFIG_FPU_NETLIST + 32*CONFIG_FPU_GRFPU_SHARED;
   constant CFG_GRFPUSH  : integer := CONFIG_FPU_GRFPU_SHARED;
   constant CFG_ICEN  	: integer := CONFIG_ICACHE_ENABLE;
   constant CFG_ISETS	: integer := CFG_IU_ISETS;
@@ -36,6 +38,7 @@
   constant CFG_DTLBNUM  : integer := CONFIG_DTLBNUM;
   constant CFG_TLB_TYPE : integer := CONFIG_TLB_TYPE + CFG_MMU_FASTWB*2;
   constant CFG_TLB_REP  : integer := CONFIG_TLB_REP;
+  constant CFG_MMU_PAGE : integer := CONFIG_MMU_PAGE;
   constant CFG_DSU   	: integer := CONFIG_DSU_ENABLE;
   constant CFG_ITBSZ 	: integer := CFG_DSU_ITB;
   constant CFG_ATBSZ 	: integer := CFG_DSU_ATB;

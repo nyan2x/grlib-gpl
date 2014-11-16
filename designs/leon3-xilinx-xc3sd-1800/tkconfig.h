@@ -24,6 +24,8 @@
 #define CONFIG_SYN_TECH stratix3
 #elif defined CONFIG_SYN_CYCLONEIII
 #define CONFIG_SYN_TECH cyclone3
+#elif defined CONFIG_SYN_EASIC45
+#define CONFIG_SYN_TECH easic45
 #elif defined CONFIG_SYN_EASIC90
 #define CONFIG_SYN_TECH easic90
 #elif defined CONFIG_SYN_IHP25
@@ -78,6 +80,8 @@
 #define CONFIG_SYN_TECH ut25
 #elif defined CONFIG_SYN_UT130HBD
 #define CONFIG_SYN_TECH ut130
+#elif defined CONFIG_SYN_UT90NHBD
+#define CONFIG_SYN_TECH ut90
 #elif defined CONFIG_SYN_TSMC90
 #define CONFIG_SYN_TECH tsmc90
 #elif defined CONFIG_SYN_TM65GPLUS
@@ -653,6 +657,10 @@
 #define CONFIG_AHB_RROBIN 0
 #endif
 
+#ifndef CONFIG_AHB_FPNPEN
+#define CONFIG_AHB_FPNPEN 0
+#endif
+
 #ifndef CONFIG_AHB_IOADDR
 #define CONFIG_AHB_IOADDR FFF
 #endif
@@ -860,6 +868,10 @@
 
 #ifndef CONFIG_DDR2SP_FTEN
 #define CONFIG_DDR2SP_FTEN 0
+#endif
+
+#ifndef CONFIG_DDR2SP_FTWIDTH
+#define CONFIG_DDR2SP_FTWIDTH 0
 #endif
 #ifndef CONFIG_AHBROM_ENABLE
 #define CONFIG_AHBROM_ENABLE 0

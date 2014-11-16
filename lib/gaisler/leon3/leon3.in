@@ -232,7 +232,11 @@ if [ "$CONFIG_LEON3" = "y" ]; then
 	BCH  		CONFIG_IUFT_BCH \
 	TMR		CONFIG_IUFT_TMR" None
       if [ "$CONFIG_FPU_ENABLE" = "y" ]; then
-        bool 'FPU Register file protection   ' CONFIG_FPUFT_EN
+        choice 'FPU Register file protection     ' \
+	  "None		CONFIG_FPUFT_NONE \
+	   Parity		CONFIG_FPUFT_PAR \
+ 	   PDMR 		CONFIG_FPUFT_DMR \
+	   TMR		CONFIG_FPUFT_TMR" None
       fi
       bool 'Register file error injection' CONFIG_RF_ERRINJ
       bool 'Cache memory protection        ' CONFIG_CACHE_FT_EN

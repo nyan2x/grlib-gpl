@@ -615,14 +615,14 @@
 #define CONFIG_RF_ERRINJ 0
 #endif
 
-#ifndef CONFIG_FPUFT_EN
-#define CONFIG_FPUFT 0
-#else
-#ifdef CONFIG_FPU_GRFPU
-#define CONFIG_FPUFT 2
-#else
+#if defined CONFIG_FPUFT_PAR
 #define CONFIG_FPUFT 1
-#endif
+#elif defined CONFIG_FPUFT_DMR
+#define CONFIG_FPUFT 2
+#elif defined CONFIG_FPUFT_TMR
+#define CONFIG_FPUFT 4
+#else
+#define CONFIG_FPUFT 0
 #endif
 
 #ifndef CONFIG_CACHE_FT_EN
@@ -655,6 +655,10 @@
 
 #ifndef CONFIG_AHB_RROBIN
 #define CONFIG_AHB_RROBIN 0
+#endif
+
+#ifndef CONFIG_AHB_FPNPEN
+#define CONFIG_AHB_FPNPEN 0
 #endif
 
 #ifndef CONFIG_AHB_IOADDR
@@ -878,6 +882,34 @@
 
 #ifndef CONFIG_DDR2SP_FTEN
 #define CONFIG_DDR2SP_FTEN 0
+#endif
+
+#ifndef CONFIG_DDR2SP_FTWIDTH
+#define CONFIG_DDR2SP_FTWIDTH 0
+#endif
+
+#ifndef CONFIG_MIG_DDR2
+#define CONFIG_MIG_DDR2 0
+#endif
+
+#ifndef CONFIG_MIG_RANKS
+#define CONFIG_MIG_RANKS 1
+#endif
+
+#ifndef CONFIG_MIG_COLBITS
+#define CONFIG_MIG_COLBITS 10
+#endif
+
+#ifndef CONFIG_MIG_ROWBITS
+#define CONFIG_MIG_ROWBITS 13
+#endif
+
+#ifndef CONFIG_MIG_BANKBITS
+#define CONFIG_MIG_BANKBITS 2
+#endif
+
+#ifndef CONFIG_MIG_HMASK
+#define CONFIG_MIG_HMASK F00
 #endif
 #ifndef CONFIG_AHBSTAT_ENABLE
 #define CONFIG_AHBSTAT_ENABLE  0

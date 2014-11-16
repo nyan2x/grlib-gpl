@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ package spacewire is
     timein      : std_logic_vector(7 downto 0);
     clkdiv10    : std_logic_vector(7 downto 0);
     rmapen      : std_ulogic;
+    rmapnodeaddr: std_logic_vector(7 downto 0);
     dcrstval    : std_logic_vector(9 downto 0);
     timerrstval : std_logic_vector(11 downto 0);
   end record;
@@ -56,14 +57,14 @@ package spacewire is
   constant grspw_in_none : grspw_in_type :=
     ((others => '0'), (others => '0'), (others => '0'),
      (others => '0'), '0', '0', (others => '0'), (others => '0'), '0',
-     (others => '0'), (others => '0'));
+     (others => '0'), (others => '0'), (others => '0'));
 
   constant grspw_out_none : grspw_out_type :=
     ((others => '0'), (others => '0'), '0', '0', '0', (others => '0'),
      '0', '0', (others => '0'), '0', '0');
 
   type grspw_codec_in_type is record
-    --spw                                     
+    --spw
     d            : std_logic_vector(3 downto 0);
     dv           : std_logic_vector(3 downto 0);
     dconnect     : std_logic_vector(3 downto 0);
@@ -243,7 +244,7 @@ package spacewire is
     ((others => '0'), (others => '0'), (others => '0'), (others => '0'),
      (others => (others => '0')), (others => '0'), (others => (others => '0')), '0',
      '0', '0', (others => '0'));
-  
+
   type spw_ahb_mst_out_vector is array (natural range <>) of
     ahb_mst_out_type;
   type spw_apb_slv_out_vector is array (natural range <>) of
@@ -325,7 +326,7 @@ package spacewire is
       pirq         : integer range 0 to NAHBIRQ-1 := 0;
       sysfreq      : integer := 10000;
       usegen       : integer range 0 to 1  := 1;
-      nsync        : integer range 1 to 2  := 1; 
+      nsync        : integer range 1 to 2  := 1;
       rmap         : integer range 0 to 2  := 0;
       rmapcrc      : integer range 0 to 1  := 0;
       fifosize1    : integer range 4 to 32 := 32;
@@ -367,7 +368,7 @@ package spacewire is
       pirq         : integer range 0 to NAHBIRQ-1 := 0;
       sysfreq      : integer := 10000;
       usegen       : integer range 0 to 1  := 1;
-      nsync        : integer range 1 to 2  := 1; 
+      nsync        : integer range 1 to 2  := 1;
       rmap         : integer range 0 to 2  := 0;
       rmapcrc      : integer range 0 to 1  := 0;
       fifosize1    : integer range 4 to 32 := 32;
@@ -383,10 +384,12 @@ package spacewire is
       dmachan      : integer range 1 to 4 := 1;
       memtech      : integer range 0 to NTECH := DEFMEMTECH;
       spwcore      : integer range 1 to 2 := 2;
-      input_type   : integer range 0 to 4 := 0;                 
-      output_type  : integer range 0 to 2 := 0;                 
-      rxtx_sameclk : integer range 0 to 1 := 0
-    ); 
+      input_type   : integer range 0 to 4 := 0;
+      output_type  : integer range 0 to 2 := 0;
+      rxtx_sameclk : integer range 0 to 1 := 0;
+      nodeaddr     : integer range 0 to 255 := 254;
+      destkey      : integer range 0 to 255 := 0
+    );
     port(
       rst        : in  std_ulogic;
       clk        : in  std_ulogic;
@@ -521,7 +524,7 @@ package spacewire is
       --ahb mst
       ahbmi        : in   ahb_mst_in_type;
       ahbmo        : out  ahb_mst_out_type;
-      --apb 
+      --apb
       apbi         : in   apb_slv_in_type;
       apbo	   : out  apb_slv_out_type;
       --link

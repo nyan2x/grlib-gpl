@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2011, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2012, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
 --  along with this program; if not, write to the Free Software
 --  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 -----------------------------------------------------------------------------
--- Entity: 	gpio
--- File:	gpio.vhd
+-- Entity: 	grgpio
+-- File:	grgpio.vhd
 -- Author:	Jiri Gaisler - Gaisler Research
 -- Description:	Scalable general-purpose I/O port
 ------------------------------------------------------------------------------
@@ -164,7 +164,7 @@ begin
     when others =>
       if irqgen > 1 then
         for i in 0 to (nbits+3)/4-1 loop
-          if irqgen <= 4 or i = conv_integer(apbi.paddr(4 downto 2)) then
+          if i = conv_integer(apbi.paddr(4 downto 2)) then
             for j in 0 to 3 loop
               if (j+i*4) > (nbits-1) then
                 exit;
@@ -206,7 +206,7 @@ begin
       when others =>
         if irqgen > 1 then
           for i in 0 to (nbits+3)/4-1 loop
-            if irqgen <= 4 or i = conv_integer(apbi.paddr(4 downto 2)) then
+            if i = conv_integer(apbi.paddr(4 downto 2)) then
               for j in 0 to 3 loop
                 if (j+i*4) > (nbits-1) then
                   exit;

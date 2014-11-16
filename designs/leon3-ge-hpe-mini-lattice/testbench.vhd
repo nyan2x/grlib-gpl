@@ -264,9 +264,9 @@ begin
       sertx      => dsutx,
       serrx      => dsurx,
 
-      dsuen   => dsuen,
+--      dsuen   => dsuen,
       dsubre  => dsubre,
-      dsuactn => dsuactn,
+--      dsuactn => dsuactn,
 
       ramsn  => ramsn(0),
       oen    => oen,

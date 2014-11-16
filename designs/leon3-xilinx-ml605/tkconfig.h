@@ -555,14 +555,14 @@
 #define CONFIG_RF_ERRINJ 0
 #endif
 
-#ifndef CONFIG_FPUFT_EN
-#define CONFIG_FPUFT 0
-#else
-#ifdef CONFIG_FPU_GRFPU
-#define CONFIG_FPUFT 2
-#else
+#if defined CONFIG_FPUFT_PAR
 #define CONFIG_FPUFT 1
-#endif
+#elif defined CONFIG_FPUFT_DMR
+#define CONFIG_FPUFT 2
+#elif defined CONFIG_FPUFT_TMR
+#define CONFIG_FPUFT 4
+#else
+#define CONFIG_FPUFT 0
 #endif
 
 #ifndef CONFIG_CACHE_FT_EN
@@ -595,6 +595,10 @@
 
 #ifndef CONFIG_AHB_RROBIN
 #define CONFIG_AHB_RROBIN 0
+#endif
+
+#ifndef CONFIG_AHB_FPNPEN
+#define CONFIG_AHB_FPNPEN 0
 #endif
 
 #ifndef CONFIG_AHB_IOADDR

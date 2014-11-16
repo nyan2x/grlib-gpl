@@ -47,8 +47,7 @@ LIBRARY WORK;
 
 library grlib;
 use grlib.stdlib.all;
-library gaisler;
-use gaisler.sim.all;
+use grlib.stdio.all;
 
 ENTITY MT46V16M16 IS
     GENERIC (                                   -- Timing for -75Z CL2
@@ -74,7 +73,8 @@ ENTITY MT46V16M16 IS
         index     : INTEGER :=  0;
 	fname     : string := "sdram.srec";	-- File to read from
         bbits     : INTEGER :=  16;
-        fdelay    : INTEGER :=  0
+        fdelay    : INTEGER :=  0;
+        chktiming : boolean := true     -- Perform timing checks
     );
     PORT (
         Dq    : INOUT STD_LOGIC_VECTOR (data_bits - 1 DOWNTO 0) := (OTHERS => 'Z');
@@ -806,13 +806,13 @@ BEGIN
             -- Auto Refresh
             IF Aref_enable = '1' THEN
                 -- Auto Refresh to Auto Refresh
-                ASSERT (NOW - RFC_chk >= tRFC)
+                ASSERT (NOW - RFC_chk >= tRFC) or (not chktiming)
                     REPORT "tRFC violation during Auto Refresh"
                     SEVERITY WARNING;
 
                 -- Precharge to Auto Refresh
                 ASSERT ((NOW - RP_chk0 >= tRP) AND (NOW - RP_chk1 >= tRP) AND
-                        (NOW - RP_chk2 >= tRP) AND (NOW - RP_chk3 >= tRP))
+                        (NOW - RP_chk2 >= tRP) AND (NOW - RP_chk3 >= tRP)) or (not chktiming)
                     REPORT "tRP violation during Auto Refresh"
                     SEVERITY WARNING;
 
@@ -842,12 +842,12 @@ BEGIN
                 
                 -- Precharge to EMR
                 ASSERT ((NOW - RP_chk0 >= tRP) AND (NOW - RP_chk1 >= tRP) AND
-                        (NOW - RP_chk2 >= tRP) AND (NOW - RP_chk3 >= tRP))
+                        (NOW - RP_chk2 >= tRP) AND (NOW - RP_chk3 >= tRP)) or (not chktiming)
                     REPORT "tRP violation during Extended Load Register"
                     SEVERITY WARNING;
 
                 -- LMR/EMR to EMR
-                ASSERT (NOW - MRD_chk >= tMRD)
+                ASSERT (NOW - MRD_chk >= tMRD) or (not chktiming)
                     REPORT "tMRD violation during Extended Mode Register"
                     SEVERITY WARNING;
 
@@ -882,12 +882,12 @@ BEGIN
 
                 -- Precharge to EMR
                 ASSERT ((NOW - RP_chk0 >= tRP) AND (NOW - RP_chk1 >= tRP) AND
-                        (NOW - RP_chk2 >= tRP) AND (NOW - RP_chk3 >= tRP))
+                        (NOW - RP_chk2 >= tRP) AND (NOW - RP_chk3 >= tRP)) or (not chktiming)
                     REPORT "tRP violation during Load Mode Register"
                     SEVERITY WARNING;
 
                 -- LMR/ELMR to LMR
-                ASSERT (NOW - MRD_chk >= tMRD)
+                ASSERT (NOW - MRD_chk >= tMRD) or (not chktiming)
                     REPORT "tMRD violation during Load Mode Register"
                     SEVERITY WARNING;
 
@@ -921,12 +921,12 @@ BEGIN
                 -- Activate Bank 0
                 IF Ba = "00" AND Pc_b0 = '1' THEN
                     -- Activate to Activate (same bank)
-                    ASSERT (NOW - RC_chk0 >= tRC)
+                    ASSERT (NOW - RC_chk0 >= tRC) or (not chktiming)
                         REPORT "tRC violation during Activate Bank 0"
                         SEVERITY WARNING;
 
                     -- Precharge to Active
-                    ASSERT (NOW - RP_chk0 >= tRP)
+                    ASSERT (NOW - RP_chk0 >= tRP) or (not chktiming)
                         REPORT "tRP violation during Activate Bank 0"
                         SEVERITY WARNING;
 
@@ -943,12 +943,12 @@ BEGIN
                 -- Activate Bank 1
                 IF Ba = "01" AND Pc_b1 = '1' THEN
                     -- Activate to Activate (same bank)
-                    ASSERT (NOW - RC_chk1 >= tRC)
+                    ASSERT (NOW - RC_chk1 >= tRC) or (not chktiming)
                         REPORT "tRC violation during Activate Bank 1"
                         SEVERITY WARNING;
 
                     -- Precharge to Active
-                    ASSERT (NOW - RP_chk1 >= tRP)
+                    ASSERT (NOW - RP_chk1 >= tRP) or (not chktiming)
                         REPORT "tRP violation during Activate Bank 1"
                         SEVERITY WARNING;
 
@@ -965,12 +965,12 @@ BEGIN
                 -- Activate Bank 2
                 IF Ba = "10" AND Pc_b2 = '1' THEN
                     -- Activate to Activate (same bank)
-                    ASSERT (NOW - RC_chk2 >= tRC)
+                    ASSERT (NOW - RC_chk2 >= tRC) or (not chktiming)
                         REPORT "tRC violation during Activate Bank 2"
                         SEVERITY WARNING;
 
                     -- Precharge to Active
-                    ASSERT (NOW - RP_chk2 >= tRP)
+                    ASSERT (NOW - RP_chk2 >= tRP) or (not chktiming)
                         REPORT "tRP violation during Activate Bank 2"
                         SEVERITY WARNING;
 
@@ -987,12 +987,12 @@ BEGIN
                 -- Activate Bank 3
                 IF Ba = "11" AND Pc_b3 = '1' THEN
                     -- Activate to Activate (same bank)
-                    ASSERT (NOW - RC_chk3 >= tRC)
+                    ASSERT (NOW - RC_chk3 >= tRC) or (not chktiming)
                         REPORT "tRC violation during Activate Bank 3"
                         SEVERITY WARNING;
 
                     -- Precharge to Active
-                    ASSERT (NOW - RP_chk3 >= tRP)
+                    ASSERT (NOW - RP_chk3 >= tRP) or (not chktiming)
                         REPORT "tRP violation during Activate Bank 3"
                         SEVERITY WARNING;
 
@@ -1008,13 +1008,13 @@ BEGIN
 
                 -- Activate Bank A to Activate Bank B
                 IF (Prev_bank /= Ba) THEN
-                    ASSERT (NOW - RRD_chk >= tRRD)
+                    ASSERT (NOW - RRD_chk >= tRRD) or (not chktiming)
                         REPORT "tRRD violation during Activate"
                         SEVERITY WARNING;
                 END IF;
                 
                 -- AutoRefresh to Activate
-                ASSERT (NOW - RFC_chk >= tRFC)
+                ASSERT (NOW - RFC_chk >= tRFC) or (not chktiming)
                     REPORT "tRFC violation during Activate"
                     SEVERITY WARNING;
                 
@@ -1026,7 +1026,7 @@ BEGIN
             -- Precharge Block - Consider NOP if bank already precharged or in process of precharging
             IF Prech_enable = '1' THEN
                 -- EMR or LMR to Precharge
-                ASSERT (NOW - MRD_chk >= tMRD)
+                ASSERT (NOW - MRD_chk >= tMRD) or (not chktiming)
                     REPORT "tMRD violation during Precharge"
                     SEVERITY WARNING;
 
@@ -1037,12 +1037,12 @@ BEGIN
                     RP_chk0 := NOW;
 
                     -- Activate to Precharge bank 0
-                    ASSERT (NOW - RAS_chk0 >= tRAS)
+                    ASSERT (NOW - RAS_chk0 >= tRAS) or (not chktiming)
                         REPORT "tRAS violation during Precharge"
                         SEVERITY WARNING;
 
                     -- tWR violation check for Write
-                    ASSERT (NOW - WR_chk0 >= tWR)
+                    ASSERT (NOW - WR_chk0 >= tWR) or (not chktiming)
                         REPORT "tWR violation during Precharge"
                         SEVERITY WARNING;
                 END IF;
@@ -1054,12 +1054,12 @@ BEGIN
                     RP_chk1 := NOW;
 
                     -- Activate to Precharge
-                    ASSERT (NOW - RAS_chk1 >= tRAS)
+                    ASSERT (NOW - RAS_chk1 >= tRAS) or (not chktiming)
                         REPORT "tRAS violation during Precharge"
                         SEVERITY WARNING;
 
                     -- tWR violation check for Write
-                    ASSERT (NOW - WR_chk1 >= tWR)
+                    ASSERT (NOW - WR_chk1 >= tWR) or (not chktiming)
                         REPORT "tWR violation during Precharge"
                         SEVERITY WARNING;
                 END IF;
@@ -1071,12 +1071,12 @@ BEGIN
                     RP_chk2 := NOW;
 
                     -- Activate to Precharge
-                    ASSERT (NOW - RAS_chk2 >= tRAS)
+                    ASSERT (NOW - RAS_chk2 >= tRAS) or (not chktiming)
                         REPORT "tRAS violation during Precharge"
                         SEVERITY WARNING;
 
                     -- tWR violation check for Write
-                    ASSERT (NOW - WR_chk2 >= tWR)
+                    ASSERT (NOW - WR_chk2 >= tWR) or (not chktiming)
                         REPORT "tWR violation during Precharge"
                         SEVERITY WARNING;
                 END IF;
@@ -1088,12 +1088,12 @@ BEGIN
                     RP_chk3 := NOW;
 
                     -- Activate to Precharge
-                    ASSERT (NOW - RAS_chk3 >= tRAS)
+                    ASSERT (NOW - RAS_chk3 >= tRAS) or (not chktiming)
                         REPORT "tRAS violation during Precharge"
                         SEVERITY WARNING;
 
                     -- tWR violation check for Write
-                    ASSERT (NOW - WR_chk3 >= tWR)
+                    ASSERT (NOW - WR_chk3 >= tWR) or (not chktiming)
                         REPORT "tWR violation during Precharge"
                         SEVERITY WARNING;
                 END IF;
@@ -1197,7 +1197,7 @@ BEGIN
                     ASSERT ((Ba = "00" AND NOW - RCD_chk0 >= tRCD) OR
                             (Ba = "01" AND NOW - RCD_chk1 >= tRCD) OR
                             (Ba = "10" AND NOW - RCD_chk2 >= tRCD) OR
-                            (Ba = "11" AND NOW - RCD_chk3 >= tRCD))
+                            (Ba = "11" AND NOW - RCD_chk3 >= tRCD)) or (not chktiming)
                         REPORT "tRCD violation during Read"
                         SEVERITY WARNING;
                 END IF;
@@ -1207,7 +1207,7 @@ BEGIN
                     ASSERT ((Ba = "00" AND NOW - RAP_chk0 >= tRAP) OR
                             (Ba = "01" AND NOW - RAP_chk1 >= tRAP) OR
                             (Ba = "10" AND NOW - RAP_chk2 >= tRAP) OR
-                            (Ba = "11" AND NOW - RAP_chk3 >= tRAP))
+                            (Ba = "11" AND NOW - RAP_chk3 >= tRAP)) or (not chktiming)
                         REPORT "tRAP violation during Read"
                         SEVERITY WARNING;
                 END IF;
@@ -1250,7 +1250,7 @@ BEGIN
                 ASSERT ((Ba = "00" AND NOW - RCD_chk0 >= tRCD) OR
                         (Ba = "01" AND NOW - RCD_chk1 >= tRCD) OR
                         (Ba = "10" AND NOW - RCD_chk2 >= tRCD) OR
-                        (Ba = "11" AND NOW - RCD_chk3 >= tRCD))
+                        (Ba = "11" AND NOW - RCD_chk3 >= tRCD)) or (not chktiming)
                     REPORT "tRCD violation during Write"
                     SEVERITY WARNING;
 
@@ -1268,18 +1268,18 @@ BEGIN
                 readline(file_load, l);
                 read(l, ch);
                 if (ch /= 'S') or (ch /= 's') then
-                  hexread(l, rectype);
-                  hexread(l, reclen);
+                  hread(l, rectype);
+                  hread(l, reclen);
 		  recaddr := (others => '0');
 		  case rectype is 
 		  when "0001" =>
-                    hexread(l, recaddr(15 downto 0));
+                    hread(l, recaddr(15 downto 0));
 		  when "0010" =>
-                    hexread(l, recaddr(23 downto 0));
+                    hread(l, recaddr(23 downto 0));
 		  when "0011" =>
-                    hexread(l, recaddr);
+                    hread(l, recaddr);
 		  when "0111" =>
-                    hexread(l, recaddr);
+                    hread(l, recaddr);
 --		    if (index = 0) then print("Start address : " & tost(recaddr)); end if;
 		    next;
 		  when others => next;
@@ -1287,7 +1287,7 @@ BEGIN
 	 	  case bbits is
 		  when 64 =>	-- 64-bit bank with four 16-bit DDRs
 		    recaddr(31 downto 18+cols_bits) := (others => '0');
-                    hexread(l, recdata);
+                    hread(l, recdata);
 		    Bank_Load := recaddr(17+cols_bits downto 16+cols_bits);
 		    Rows_Load := recaddr(15+cols_bits downto 3+cols_bits);
 		    Cols_Load := recaddr(2+cols_bits downto 3);
@@ -1312,7 +1312,7 @@ BEGIN
 
 		  when 32 =>	-- 32-bit bank with two 16-bit DDRs
 		    recaddr(31 downto 17+cols_bits) := (others => '0');
-                    hexread(l, recdata);
+                    hread(l, recdata);
 		    Bank_Load := recaddr(16+cols_bits downto 15+cols_bits);
 		    Rows_Load := recaddr(14+cols_bits downto 2+cols_bits);
 		    Cols_Load := recaddr(1+cols_bits downto 2);
@@ -1337,8 +1337,8 @@ BEGIN
                     END IF;
 
 		  when others =>	-- 16-bit bank with one 16-bit DDR
-                    hexread(l, recdata);
-		    recaddr(31 downto 25) := (others => '0');
+                    hread(l, recdata);
+		    recaddr(31 downto 16+cols_bits) := (others => '0');
 		    Bank_Load := recaddr(15+cols_bits downto 14+cols_bits);
 		    Rows_Load := recaddr(13+cols_bits downto 1+cols_bits);
 		    Cols_Load := recaddr(cols_bits downto 1);
@@ -1400,25 +1400,25 @@ BEGIN
     BEGIN
         WAIT ON Sys_clk;
         IF Sys_clk'EVENT AND Sys_clk = '1' THEN
-            ASSERT(Cke'LAST_EVENT >= tIS)
+            ASSERT(Cke'LAST_EVENT >= tIS) or (not chktiming)
                 REPORT "CKE Setup time violation -- tIS"
                 SEVERITY WARNING;
-            ASSERT(Cs_n'LAST_EVENT >= tIS)
+            ASSERT(Cs_n'LAST_EVENT >= tIS) or (not chktiming)
                 REPORT "CS# Setup time violation -- tIS"
-                SEVERITY WARNING;
-            ASSERT(Cas_n'LAST_EVENT >= tIS)
+                SEVERITY WARNING; 
+            ASSERT(Cas_n'LAST_EVENT >= tIS) or (not chktiming)
                 REPORT "CAS# Setup time violation -- tIS"
                 SEVERITY WARNING;
-            ASSERT(Ras_n'LAST_EVENT >= tIS)
+            ASSERT(Ras_n'LAST_EVENT >= tIS) or (not chktiming)
                 REPORT "RAS# Setup time violation -- tIS"
                 SEVERITY WARNING;
-            ASSERT(We_n'LAST_EVENT >= tIS)
+            ASSERT(We_n'LAST_EVENT >= tIS) or (not chktiming)
                 REPORT "WE# Setup time violation -- tIS"
                 SEVERITY WARNING;
-            ASSERT(Addr'LAST_EVENT >= tIS)
+            ASSERT(Addr'LAST_EVENT >= tIS) or (not chktiming)
                 REPORT "ADDR Setup time violation -- tIS"
                 SEVERITY WARNING;
-            ASSERT(Ba'LAST_EVENT >= tIS)
+            ASSERT(Ba'LAST_EVENT >= tIS) or (not chktiming)
                 REPORT "BA Setup time violation -- tIS"
                 SEVERITY WARNING;
         END IF;   
@@ -1431,25 +1431,25 @@ BEGIN
     BEGIN
         WAIT ON Sys_clk'DELAYED (tIH);
         IF Sys_clk'DELAYED (tIH) = '1' THEN
-            ASSERT(Cke'LAST_EVENT >= tIH)
+            ASSERT(Cke'LAST_EVENT >= tIH) or (not chktiming)
                 REPORT "CKE Hold time violation -- tIH"
                 SEVERITY WARNING;
-            ASSERT(Cs_n'LAST_EVENT >= tIH)
+            ASSERT(Cs_n'LAST_EVENT >= tIH) or (not chktiming)
                 REPORT "CS# Hold time violation -- tIH"
                 SEVERITY WARNING;
-            ASSERT(Cas_n'LAST_EVENT >= tIH)
+            ASSERT(Cas_n'LAST_EVENT >= tIH) or (not chktiming)
                 REPORT "CAS# Hold time violation -- tIH"
                 SEVERITY WARNING;
-            ASSERT(Ras_n'LAST_EVENT >= tIH)
+            ASSERT(Ras_n'LAST_EVENT >= tIH) or (not chktiming)
                 REPORT "RAS# Hold time violation -- tIH"
                 SEVERITY WARNING;
-            ASSERT(We_n'LAST_EVENT >= tIH)
+            ASSERT(We_n'LAST_EVENT >= tIH) or (not chktiming)
                 REPORT "WE# Hold time violation -- tIH"
                 SEVERITY WARNING;
-            ASSERT(Addr'LAST_EVENT >= tIH)
+            ASSERT(Addr'LAST_EVENT >= tIH) or (not chktiming)
                 REPORT "ADDR Hold time violation -- tIH"
                 SEVERITY WARNING;
-            ASSERT(Ba'LAST_EVENT >= tIH)
+            ASSERT(Ba'LAST_EVENT >= tIH) or (not chktiming)
                 REPORT "BA Hold time violation -- tIH"
                 SEVERITY WARNING;
         END IF;   
