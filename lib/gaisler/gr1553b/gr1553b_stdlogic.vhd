@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --  This file is a part of the GRLIB VHDL IP LIBRARY
 --  Copyright (C) 2003 - 2008, Gaisler Research
---  Copyright (C) 2008 - 2012, Aeroflex Gaisler
+--  Copyright (C) 2008 - 2013, Aeroflex Gaisler
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -151,7 +151,6 @@ begin
   mi.hready <= mi_hready;
   mi.hresp <= mi_hresp;
   mi.hrdata <= ahbdrivedata(mi_hrdata);
-  mi.hcache <= '0';
   mi.hirq <= (others => '0');
   mi.testen <= '0';
   mi.testrst <= '0';
