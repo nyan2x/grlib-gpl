@@ -59,11 +59,7 @@
 --
 -- Library      : gaisler
 --
--- Authors      : Mr Sandi Habinc
---                Aeroflex Gaisler AB
---                Kungsgatan 12
---                SE-411 19 Göteborg
---                Sweden
+-- Authors      : Aeroflex Gaisler AB
 --
 -- Contact      : mailto:support@gaisler.com
 --                http://www.gaisler.com
@@ -98,7 +94,8 @@
 -- 1.9.7    MI        4 Aug 2008    Support for Lock
 -- 1.9.8    SH       16 Apr 2009    Address recovery after SPLIT/RETRY moved
 -- 1.9.9    SH        9 Oct 2009    HPROT defult to 0x3
---------------------------------------------------------------------------------
+-- 2.0      SH        4 Mar 2011    DMAOut.Grant masked while ReAddrPhase set
+ --------------------------------------------------------------------------------
 library  IEEE;
 use      IEEE.Std_Logic_1164.all;
 
@@ -191,7 +188,7 @@ begin
    -----------------------------------------------------------------------------
    AHBOut.HADDR               <= Address;                -- internal to external
 
-   AHBOut.HWDATA              <= DMAIn.Data;             -- combinatorial path
+   AHBOut.HWDATA              <= ahbdrivedata(DMAIn.Data); -- combinatorial path
 
    DMAOut.OKAY                <= '1' when AHBIn.HREADY='1' and
                                           DataPhase ='1' and
@@ -209,7 +206,7 @@ begin
                                           AHBIN.HRESP=HRESP_ERROR else
                                  '0';
 
-   DMAOut.Grant               <= '0' when DelDataPhase='1' or ReDataPhase='1' else
+   DMAOut.Grant               <= '0' when ReDataPhase='1' or ReAddrPhase='1' else
                                  '1' when AHBIn.HREADY='1' and
                                           AHBInHGRANTx='1' and
                                           DMAIn.Request='1' else
@@ -312,7 +309,7 @@ begin
 
             if    AHBIn.HREADY='1' and DataPhase='1' then
                -- sample AHB input data at end of data phase
-               DMAOut.Data          <= AHBIn.HRDATA;
+               DMAOut.Data          <= ahbreadword(AHBIn.HRDATA);
                DataPhase            <= '0';              -- data phase ends
                DMAOut.Ready         <= '1';
             else

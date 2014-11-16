@@ -87,6 +87,7 @@ struct spwvars
    int    nodeaddr;
    int    mask;
    int    destkey;
+   int    port;
    struct dmachanvar dma[4];
 };
 
@@ -97,7 +98,7 @@ int wait_running(struct spwvars *spw);
 /*sets node specific parameters in the spwvars structure */
 int spw_setparam(int nodeaddr, int clkdiv, int destkey,
                  int timetxen, int timerxen, int spwadr, 
-                 int khz, struct spwvars *spw);
+                 int khz, struct spwvars *spw, int port);
 
 int spw_setparam_dma(int dmachan, int addr, int mask, int nospill, int rxmaxlen, struct spwvars *spw);
 
@@ -152,14 +153,19 @@ int spw_checkrx(int dmachan, int *size, struct rxstatus *rxs, struct spwvars *sp
   1 if packet was correctly transmitted and 2 if an error occured*/
 int spw_checktx(int dmachan, struct spwvars *spw);
 
-/*Send time-codee*/
+/*Send time-code*/
 void send_time(struct spwvars *spw);
+
+int send_time_exp(int ctrl, int time, struct spwvars *spw);
 
 /*Check if time-code has been received*/
 int check_time(struct spwvars *spw);
 
-/*Get the current time-code value*/
+/* Get the current time-code count value */
 int get_time(struct spwvars *spw);
+
+/* Get the current time-code ctrl value */
+int get_time_ctrl(struct spwvars *spw);
 
 /*Reset GRSPW*/
 void spw_reset(struct spwvars *spw);
@@ -179,6 +185,11 @@ void spw_disablesepaddr(int dmachan, struct spwvars *spw);
 void spw_enablerx(int dmachan, struct spwvars *spw);
 
 void spw_disablerx(int dmachan, struct spwvars *spw);
+
+void spw_disable_promiscuous(struct spwvars *spw);
+
+void spw_enable_promiscuous(struct spwvars *spw);
+
 
 
 

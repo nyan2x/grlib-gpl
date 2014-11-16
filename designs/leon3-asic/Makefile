@@ -6,9 +6,9 @@ DEVICE=$(PART)-$(PACKAGE)$(SPEED)
 UCF=$(GRLIB)/boards/$(BOARD)/$(TOP).ucf
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=std
-XSTOPT=
+XSTOPT=""
 VHDLSYNFILES=config.vhd ahbrom.vhd \
-	leon3core.vhd core.vhd pads.vhd leon3mp.vhd
+	bschain.vhd leon3core.vhd core.vhd pads.vhd leon3mp.vhd
 
 VHDLSIMFILES=testbench.vhd
 SIMTOP=testbench

@@ -145,6 +145,7 @@ type reg_type is record
 
   idlecnt       : std_logic_vector(3 downto 0); -- Counter, 16 idle clock sycles before entering Power-Saving mode
   sref_tmpcom   : std_logic_vector(2 downto 0); -- Save SD command when exit sref
+  pwron         : std_ulogic;
 end record;
 
 signal r, ri : reg_type;
@@ -176,6 +177,7 @@ begin
   variable lineburst : boolean;
   variable haddr_tmp : std_logic_vector(31 downto 0);
   variable arefresh : std_logic;
+  variable hwdata  : std_logic_vector(31 downto 0);
 
   begin
 
@@ -184,7 +186,7 @@ begin
     v := r; startsd := '0'; v.hresp := HRESP_OKAY; vbdrive := rbdrive; arefresh := '0';
     v.hrdata(sdbits-1 downto sdbits-32) := sdi.data(sdbits-1 downto sdbits-32);
     v.hrdata(31 downto 0) := sdi.data(31 downto 0);
-    v.hwdata := ahbsi.hwdata;
+    hwdata := ahbreadword(ahbsi.hwdata, r.haddr(4 downto 2)); v.hwdata := hwdata;
     lline := not r.cfg.casdel &  r.cfg.casdel &  r.cfg.casdel;
     if (pageburst = 0) or ((pageburst = 2) and r.cfg.pageburst = '0') then
       lineburst := true;
@@ -543,7 +545,7 @@ begin
     case r.istate is
     when iidle =>
       v.cfg.cke := '1';
-      if r.cfg.renable = '1' and r.cfg.cke = '1' then
+      if (r.cfg.renable = '1' or (pwron /= 0 and r.pwron = '1')) and r.cfg.cke = '1' then
         v.cfg.command := "010"; v.istate := pre;
       end if;
     when pre =>
@@ -568,6 +570,7 @@ begin
         v.istate := finish;
       end if;
     when others =>
+      if pwron /= 0 then v.pwron := '0'; end if;
       if r.cfg.renable = '0' and r.sdstate /= dpd then
         v.istate := iidle;
       end if;
@@ -610,27 +613,27 @@ begin
 
     if (r.hsel and r.hio and r.hwrite and r.htrans(1)) = '1' then
       if r.haddr(3 downto 2) = "00" then
-        if pageburst = 2 then v.cfg.pageburst :=  ahbsi.hwdata(17); end if;
-        v.cfg.command   :=  ahbsi.hwdata(20 downto 18);
-        v.cfg.csize     :=  ahbsi.hwdata(22 downto 21);
-        v.cfg.bsize     :=  ahbsi.hwdata(25 downto 23);
-        v.cfg.casdel    :=  ahbsi.hwdata(26);
-        v.cfg.trfc      :=  ahbsi.hwdata(29 downto 27);
-        v.cfg.trp       :=  ahbsi.hwdata(30);
-        v.cfg.renable   :=  ahbsi.hwdata(31);
-        v.cfg.refresh   :=  ahbsi.hwdata(14 downto 0);
+        if pageburst = 2 then v.cfg.pageburst :=  hwdata(17); end if;
+        v.cfg.command   :=  hwdata(20 downto 18);
+        v.cfg.csize     :=  hwdata(22 downto 21);
+        v.cfg.bsize     :=  hwdata(25 downto 23);
+        v.cfg.casdel    :=  hwdata(26);
+        v.cfg.trfc      :=  hwdata(29 downto 27);
+        v.cfg.trp       :=  hwdata(30);
+        v.cfg.renable   :=  hwdata(31);
+        v.cfg.refresh   :=  hwdata(14 downto 0);
         v.refresh       :=  (others => '0');
       elsif r.haddr(3 downto 2) = "01" then
-        if r.cfg.mobileen(1) = '1' and mobile /= 3 then v.cfg.mobileen(0) := ahbsi.hwdata(31); end if;
+        if r.cfg.mobileen(1) = '1' and mobile /= 3 then v.cfg.mobileen(0) := hwdata(31); end if;
         if r.cfg.pmode = "000" then
-          v.cfg.cke               :=  ahbsi.hwdata(30);
+          v.cfg.cke               :=  hwdata(30);
         end if;
         if r.cfg.mobileen(1) = '1' then
-          v.cfg.txsr              :=  ahbsi.hwdata(23 downto 20);
-          v.cfg.pmode             :=  ahbsi.hwdata(18 downto 16);
-          v.cfg.ds(3 downto 2)    :=  ahbsi.hwdata( 6 downto  5);
-          v.cfg.tcsr(3 downto 2)  :=  ahbsi.hwdata( 4 downto  3);
-          v.cfg.pasr(5 downto 3)  :=  ahbsi.hwdata( 2 downto  0);
+          v.cfg.txsr              :=  hwdata(23 downto 20);
+          v.cfg.pmode             :=  hwdata(18 downto 16);
+          v.cfg.ds(3 downto 2)    :=  hwdata( 6 downto  5);
+          v.cfg.tcsr(3 downto 2)  :=  hwdata( 4 downto  3);
+          v.cfg.pasr(5 downto 3)  :=  hwdata( 2 downto  0);
         end if;
       end if;
     end if;
@@ -691,8 +694,7 @@ begin
       v.cfg.bsize     := "000";
       v.cfg.casdel    :=  '1';
       v.cfg.trfc      := "111";
-      if pwron = 1 then v.cfg.renable :=  '1';
-      else v.cfg.renable :=  '0'; end if;
+      v.cfg.renable   :=  '0';
       v.cfg.trp       :=  '1';
       v.dqm           := (others => '1');
       v.sdwen         := '1';
@@ -701,6 +703,7 @@ begin
       v.hready        := '1';
       v.bsel          := '0';
       v.startsd       := '0';
+      if pwron /= 0 then v.pwron :=  '1'; end if;
       if (pageburst = 2) then
         v.cfg.pageburst   :=  '0';
       end if;
@@ -716,14 +719,18 @@ begin
       else v.cfg.cke       := '1'; end if;
       v.sref_tmpcom   := "000";
       v.idlecnt := (others => '1');
+      v.hio := '0';
     end if;
 
+    if pwron = 0 then v.pwron := '0'; end if;
+    if not WPROTEN then v.wprothit := '0'; end if;
+    
     ri <= v; 
     ribdrive <= vbdrive;
 
     ahbso.hready  <= r.hready;
     ahbso.hresp   <= r.hresp;
-    ahbso.hrdata  <= dout;
+    ahbso.hrdata  <= ahbdrivedata(dout);
     ahbso.hcache  <= not r.hio;
 
   end process;
@@ -750,7 +757,7 @@ begin
   rgen : if not SDINVCLK generate
     sdo.address  <= r.address;
     sdo.bdrive   <= r.nbdrive when oepol = 1 else r.bdrive;
-    sdo.vbdrive  <= rbdrive;
+    sdo.vbdrive  <= zero32 & rbdrive;
     sdo.sdcsn    <= r.sdcsn;
     sdo.sdwen    <= r.sdwen;
     sdo.dqm      <= "11111111" & r.dqm;
@@ -767,7 +774,7 @@ begin
         sdo.address  <= r.address;
         if oepol = 1 then sdo.bdrive <= r.nbdrive;
         else sdo.bdrive <= r.bdrive; end if;
-        sdo.vbdrive  <= rbdrive;
+        sdo.vbdrive  <= zero32 & rbdrive;
         sdo.sdcsn    <= r.sdcsn;
         sdo.sdwen    <= r.sdwen;
         sdo.dqm      <= "11111111" & r.dqm;

@@ -10,11 +10,6 @@ grspwc_unisim_rmap_16_16.vhd
 grspwc2_unisim_rmap_16_16.vhd
 grspwc_unisim.vhd
 grspwc2_unisim.vhd
-grlfpw_0_unisim.vhd
-grfpw_unisim.vhd
-grfpw_0_unisim_v2.vhd
-grfpw_0_unisim_v4.vhd
-grfpw_0_unisim_v5.vhd
 leon3ft_unisim.vhd
 grusbhc_unisim.vhd
 grusbhc_unisim_comb0.vhd
@@ -25,3 +20,6 @@ ssrctrl_unisim.vhd
 ftmctrl_unisim_sd0.vhd
 sysmon_unisim.vhd
 mul_unisim.vhd
+spictrl_unisim.vhd
+spictrl_unisim_comb0.vhd
+spictrl_unisim_comb1.vhd

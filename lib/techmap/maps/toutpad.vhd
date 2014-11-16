@@ -57,8 +57,16 @@ begin
     u0 : axcel_toutpad generic map (level, slew, voltage, strength)
 	 port map (pad, i, oen);
   end generate;
-  pa : if (tech = proasic) or (tech = apa3) generate
+  pa3 : if (tech = proasic) or (tech = apa3) generate
     u0 : apa3_toutpad generic map (level, slew, voltage, strength)
+	 port map (pad, i, oen);
+  end generate;
+  pa3e : if (tech = apa3e) generate
+    u0 : apa3e_toutpad generic map (level, slew, voltage, strength)
+	 port map (pad, i, oen);
+  end generate;
+  pa3l : if (tech = apa3l) generate
+    u0 : apa3l_toutpad generic map (level, slew, voltage, strength)
 	 port map (pad, i, oen);
   end generate;
   fus : if (tech = actfus) generate
@@ -97,6 +105,10 @@ begin
     u0 : ut025crh_toutpad generic map (level, slew, voltage, strength)
          port map(pad, i, oen);
   end generate;
+  ut13  : if (tech = ut130) generate
+    u0 : ut130hbd_toutpad generic map (level, slew, voltage, strength)
+         port map(pad, i, oen);
+  end generate;
   pere  : if (tech = peregrine) generate
     u0 : peregrine_toutpad generic map (level, slew, voltage, strength)
          port map(pad, i, oen);
@@ -104,6 +116,14 @@ begin
   nex : if (tech = easic90) generate
     u0 : nextreme_toutpad generic map (level, slew, voltage, strength)
 	 port map (pad, i, oen);
+  end generate;
+  n2x :  if (tech = easic45) generate
+    u0 : n2x_toutpad generic map (level, slew, voltage, strength)
+	 port map (pad, i, oen);
+  end generate;
+  ut90nhbd : if (tech = ut90) generate
+    u0 : ut90nhbd_toutpad generic map (level, slew, voltage, strength)
+         port map(pad, i, oen);
   end generate;
 end;
 

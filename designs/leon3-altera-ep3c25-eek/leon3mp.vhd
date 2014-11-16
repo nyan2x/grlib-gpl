@@ -34,7 +34,6 @@ use gaisler.leon3.all;
 use gaisler.uart.all;
 use gaisler.misc.all;
 use gaisler.net.all;
-use gaisler.ata.all;
 use gaisler.jtag.all;
 library esa;
 use esa.memoryctrl.all;
@@ -295,7 +294,8 @@ architecture rtl of leon3mp is
   constant IOAEN : integer := 1;
   constant BOARD_FREQ : integer := 50000;   -- input frequency in KHz
   constant CPU_FREQ : integer := BOARD_FREQ * CFG_CLKMUL / CFG_CLKDIV;  -- cpu frequency in KHz
-
+  constant I2C_FILTER : integer := (CPU_FREQ*5+50000)/100000+1;
+  
   signal lclk, lclkout  : std_ulogic;
   
   signal dsubre : std_ulogic;
@@ -384,7 +384,9 @@ begin
       dsuact_pad : outpad generic map (tech => padtech) port map (dsuact, dsuo.active);
     end generate;
   end generate;
-  nodcom : if CFG_DSU = 0 generate ahbso(2) <= ahbs_none; end generate;
+  nodsu : if CFG_DSU = 0 generate 
+    ahbso(2) <= ahbs_none; dsuo.tstop <= '0'; dsuo.active <= '0';
+  end generate;
 
   dcomgen : if CFG_AHB_UART = 1 generate
     dcom0 : ahbuart                     -- Debug UART
@@ -547,7 +549,7 @@ begin
         sepirq => CFG_GPT_SEPIRQ, sbits => CFG_GPT_SW, ntimers => CFG_GPT_NTIM,
         nbits  => CFG_GPT_TW)
       port map (rstn, clkm, apbi, apbo(3), gpti, open);
-    gpti.dhalt <= dsuo.active; gpti.extclk <= '0';
+    gpti.dhalt <= dsuo.tstop; gpti.extclk <= '0';
   end generate;
   notim : if CFG_GPT_ENABLE = 0 generate apbo(3) <= apb_none; end generate;
   
@@ -577,7 +579,8 @@ begin
 
   i2cm: if CFG_I2C_ENABLE = 1 generate  -- I2C master
     i2c0 : i2cmst
-      generic map (pindex => 8, paddr => 8, pmask => 16#FFF#, pirq => 11)
+      generic map (pindex => 8, paddr => 8, pmask => 16#FFF#,
+                   pirq => 11, filter => I2C_FILTER)
       port map (rstn, clkm, apbi, apbo(8), i2ci, i2co);
     -- The EEK does not use a bi-directional line for the I2C clock
     i2ci.scl <= i2co.scloen;            -- No clock stretch possible
@@ -592,7 +595,8 @@ begin
     spi1 : spictrl
     generic map (pindex => 9, paddr  => 9, pmask  => 16#fff#, pirq => 9,
                  fdepth => CFG_SPICTRL_FIFO, slvselen => CFG_SPICTRL_SLVREG,
-                 slvselsz => CFG_SPICTRL_SLVS, odmode => 1)
+                 slvselsz => CFG_SPICTRL_SLVS, odmode => 1,
+                 syncram => CFG_SPICTRL_SYNCRAM, ft => CFG_SPICTRL_FT)
     port map (rstn, clkm, apbi, apbo(9), spii, spio, slvsel);
    miso_pad : iopad generic map (tech => padtech)
      port map (hc_sd_dat, spio.miso, spio.misooen, spii.miso);
@@ -663,7 +667,8 @@ begin
     -- Interrupt and busy signals not connected
     touch3spi1 : spictrl
       generic map (pindex => 12, paddr  => 12, pmask  => 16#fff#, pirq => 12,
-                   fdepth => 2, slvselen => 1, slvselsz => 2, odmode => 0)
+                   fdepth => 2, slvselen => 1, slvselsz => 2, odmode => 0,
+                   syncram => 0, ft => 0)
       port map (rstn, clkm, apbi, apbo(12), lcdspii, lcdspio, lcdslvsel);
     adc_miso_pad : inpad generic map (tech => padtech)
       port map (hc_adc_dout, lcdspii.miso);

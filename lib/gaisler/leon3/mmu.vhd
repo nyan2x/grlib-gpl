@@ -152,7 +152,7 @@ begin
   end process p1;
   
 
-  p0: process (rst, r, c, mmudci, mmuici, mcmmo, tlbo_a0, tlbo_a1, tlbi_a0, tlbi_a1, two_a, twi_a, two)
+  p0: process (rst, r, mmudci, mmuici, mcmmo, tlbo_a0, tlbo_a1, tlbi_a0, tlbi_a1, two_a, twi_a, two)
     variable cmbtlbin     : mmuidc_data_in_type;
     variable cmbtlbout    : mmutlb_out_type;
     
@@ -386,7 +386,11 @@ begin
         if (mmudci.trans_op or mmudci.flush_op or mmuici.trans_op) = '1' then
           v.cmb_s1.tlbactive := '1';
         end if;
-        if mmudci.trans_op = '1' then
+        if mmuici.trans_op = '1' then
+          mmuico_grant := '1'; 
+          v.cmb_s1.tlbowner := id_icache;
+          v.cmb_s1.op.trans_op := '1';
+        elsif mmudci.trans_op = '1' then
           mmudco_grant := '1';
           v.cmb_s1.tlbowner := id_dcache;
           v.cmb_s1.op.trans_op := '1';
@@ -394,10 +398,6 @@ begin
           mmudco_grant := '1';
           v.cmb_s1.tlbowner := id_dcache;
           v.cmb_s1.op.flush_op := '1';
-        elsif mmuici.trans_op = '1' then
-          mmuico_grant := '1'; 
-          v.cmb_s1.tlbowner := id_icache;
-          v.cmb_s1.op.trans_op := '1';
         end if;
       end if;
     
@@ -566,6 +566,7 @@ begin
     mmuico.transdata <= mmuico_transdata;
     mmudco.grant     <= mmudco_grant;
     mmuico.grant     <= mmuico_grant;
+    mmuico.tlbmiss   <= twi_a(0).tlbmiss;
     mmudco.mmctrl2   <= r.mmctrl2;
     mmudco.wbtransdata <= wbtransdata;
 
@@ -583,6 +584,7 @@ begin
     ctlb0 : mmutlb
       generic map ( tech, M_ENT_C, 0, tlb_rep, mmupgsz )
       port map (rst, clk, tlbi_a0, tlbo_a0, two_a(0), twi_a(0));
+      mmudco.tlbmiss   <= twi_a(0).tlbmiss;
   end generate tlbcomb0;
 
   tlbsplit0: if M_TLB_TYPE = 0 generate
@@ -594,6 +596,7 @@ begin
     dtlb0 : mmutlb
       generic map ( tech, M_ENT_D, tlb_type, tlb_rep, mmupgsz )
       port map (rst, clk, tlbi_a1, tlbo_a1, two_a(1), twi_a(1));
+      mmudco.tlbmiss   <= twi_a(1).tlbmiss;
   end generate tlbsplit0;
 
   -- table walk component

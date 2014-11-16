@@ -32,7 +32,8 @@ library grlib;
 use grlib.stdlib.all;
 use grlib.stdio.all;
 use grlib.amba.all;
-
+use grlib.devices.all;
+library gaisler;
 
 package sim is
 
@@ -150,7 +151,8 @@ package sim is
   generic(sector_length: integer :=512; --in bytes
         disk_size: integer :=32; --in sectors
         log2_size : integer :=14; --Log2(sector_length*disk_size), abits
-        Tlr : time := 35 ns
+        Tlr : time := 35 ns;
+        sramfile : string := "disk.srec"
         );
   port(
   --for convinience, not part of ATA interface
@@ -177,6 +179,11 @@ package sim is
   procedure apbps2_subtest(subtest : integer);
   procedure i2cslv_subtest(subtest : integer);
   procedure grpwm_subtest(subtest : integer);
+  procedure grgpio_subtest(subtest : integer);
+  procedure griommu_subtest(subtest : integer);
+  procedure l4stat_subtest(subtest : integer);
+
+  procedure call_subtest(vendorid, deviceid, subtest : integer);
   
   component ahbrep
   generic (
@@ -213,6 +220,29 @@ package sim is
     );
   end component;
 
+  type grusb_dcl_debug_data is array (0 to 503) of std_logic_vector(7 downto 0);
+  
+  component grusb_dclsim
+    generic (
+      functm  : integer range 0 to 1 := 0;
+      keepclk : integer range 0 to 1 := 0);
+    port (
+      rst    : in    std_ulogic;
+      clk    : out   std_ulogic;
+      d      : inout std_logic_vector(7 downto 0);
+      nxt    : out   std_ulogic;
+      stp    : in    std_ulogic;
+      dir    : out   std_ulogic;
+      delay  : in    std_ulogic := '0';
+      dstart : in    std_ulogic;
+      drw    : in    std_ulogic;
+      daddr  : in    std_logic_vector(31 downto 0);
+      dlen   : in    std_logic_vector(14 downto 0);
+      ddi    : in    grusb_dcl_debug_data;
+      ddone  : out   std_ulogic;
+      ddo    : out   grusb_dcl_debug_data);
+  end component;
+  
   component ulpi
     generic (
       LSDEV      : boolean := false -- Low-Speed device attached
@@ -304,6 +334,20 @@ package sim is
     signal data     : inout std_logic;
     -- Configuration
     constant DELAY  : in time := 40 us
+    );
+
+  procedure grusb_dcl_read (
+    signal   clk   : in  std_ulogic;
+    signal   rw    : out std_ulogic;
+    signal   start : out std_ulogic;
+    signal   done  : in  std_ulogic
+    );
+  
+  procedure grusb_dcl_write (
+    signal   clk   : in  std_ulogic;
+    signal   rw    : out std_ulogic;
+    signal   start : out std_ulogic;
+    signal   done  : in  std_ulogic
     );
   
 end;
@@ -476,6 +520,7 @@ package body sim is
     when 12 => print("  CPU#" & (tost(subtest/16)) & " ddata cache ram");
     when 13 => print("  CPU#" & (tost(subtest/16)) & " GRFPU test");
     when 14 => print("  CPU#" & (tost(subtest/16)) & " memory management unit");
+    when 15 => print("  CPU#" & (tost(subtest/16)) & " CASA");
     when others => print("  sub-system test " & tost(subtest));
     end case;
 
@@ -525,6 +570,7 @@ package body sim is
     when 1 => print("  APB interface reset values");
     when 2 => print("  Loopback mode");
     when 3 => print("  AM Loopback mode");
+    when 4 => print("  External device test");
     when others => print("  sub-system test " & tost(subtest));
     end case;
 
@@ -570,11 +616,12 @@ package body sim is
   begin
 
     case subtest is
-    when 1 => print("  Nominal interrupts");
-    when 2 => print("  Extended interrupts");
+    when 0 to 15 => print("  Testing internal controller " & tost(subtest));
+    when 16 =>  print("  Testing timestamping using GPIO port");
+    when 17 =>  print("  Testing watchdog functionality");
     when others => print("  sub-system test " & tost(subtest));
     end case;
-
+    
   end;
 
   procedure spimctrl_subtest(subtest : integer) is
@@ -637,8 +684,77 @@ package body sim is
     end case;
 
   end;
-    
 
+  procedure grgpio_subtest(subtest : integer) is
+  begin
+
+    case subtest is
+    when 1 => print("  IN, OUT and DIR registers");
+    when 2 => print("  Interrupt generation"); 
+    when others => print("  sub-system test " & tost(subtest));
+    end case;
+
+  end;
+
+  procedure griommu_subtest(subtest : integer) is
+  begin
+
+    case subtest is
+    when 1 => print("  Register interface");
+    when 2 => print("  Cache flush");
+    when 3 => print("  Diagnostic cache accesses");
+    when 4 => print("  Fault tolerance");
+    when others => print("  sub-system test " & tost(subtest));
+    end case;
+
+  end;
+
+  procedure l4stat_subtest(subtest : integer) is
+  begin
+
+    print("  testing counter " & tost(subtest));
+
+  end;
+
+  procedure call_subtest(vendorid, deviceid, subtest : integer) is
+  begin
+    if vendorid = VENDOR_GAISLER then
+      case deviceid is
+        when GAISLER_LEON3 | GAISLER_LEON4 | GAISLER_L2CACHE=> leon3_subtest(subtest);
+        when GAISLER_FTMCTRL => mctrl_subtest(subtest);
+        when GAISLER_GPTIMER => gptimer_subtest(subtest);
+        when GAISLER_LEON3DSU => dsu3_subtest(subtest);
+        when GAISLER_SPW => spw_subtest(subtest);
+        when GAISLER_SPICTRL => spictrl_subtest(subtest); 
+        when GAISLER_I2CMST => i2cmst_subtest(subtest);
+        when GAISLER_UHCI => uhc_subtest(subtest);
+        when GAISLER_EHCI => ehc_subtest(subtest);                    
+        when GAISLER_IRQMP => irqmp_subtest(subtest);                    
+        when GAISLER_SPIMCTRL => spimctrl_subtest(subtest);                      
+        when GAISLER_SVGACTRL => svgactrl_subtest(subtest);
+        when GAISLER_APBPS2 => apbps2_subtest(subtest);
+        when GAISLER_I2CSLV => i2cslv_subtest(subtest);
+        when GAISLER_PWM => grpwm_subtest(subtest);
+        when GAISLER_GPIO => grgpio_subtest(subtest);
+        when GAISLER_GRIOMMU => griommu_subtest(subtest);
+        when GAISLER_L4STAT => l4stat_subtest(subtest);
+        when others =>
+          print ("  subtest " & tost(subtest));
+      end case;
+    elsif vendorid = VENDOR_ESA then
+      case deviceid is
+        when ESA_LEON2 => leon3_subtest(subtest);
+        when ESA_MCTRL => mctrl_subtest(subtest);
+        when ESA_TIMER => gptimer_subtest(subtest);
+        when others =>
+          print ("subtest " & tost(subtest));
+      end case;
+    else
+      print ("subtest " & tost(subtest));
+    end if;
+  end;
+
+  
   -----------------------------------------------------------------------------
   -- Simple simulation models
   -----------------------------------------------------------------------------
@@ -720,5 +836,34 @@ package body sim is
     end loop;
   end ps2_device;
 
+  
+  procedure grusb_dcl_read (
+    signal   clk   : in  std_ulogic;
+    signal   rw    : out std_ulogic;
+    signal   start : out std_ulogic;
+    signal   done  : in  std_ulogic) is
+  begin
+    rw <= '0';
+    wait until rising_edge(clk);
+    start <= '1';
+    wait until rising_edge(done);
+    start <= '0';
+    wait until falling_edge(done);
+  end grusb_dcl_read;
+
+  procedure grusb_dcl_write (
+    signal   clk   : in  std_ulogic;
+    signal   rw    : out std_ulogic;
+    signal   start : out std_ulogic;
+    signal   done  : in  std_ulogic) is
+  begin
+    rw <= '1';
+    wait until rising_edge(clk);
+    start <= '1';
+    wait until rising_edge(done);
+    start <= '0';
+    wait until falling_edge(done);
+  end grusb_dcl_write;
+  
 end;
 -- pragma translate_on

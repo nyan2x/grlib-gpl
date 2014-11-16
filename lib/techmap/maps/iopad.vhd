@@ -41,11 +41,14 @@ signal oen : std_ulogic;
 begin
   oen <= not en when oepol /= padoen_polarity(tech) else en;
   gen0 : if has_pads(tech) = 0 generate
-    pad <= i after 2 ns when oen = '0'
+    pad <= i after 2 ns when oen = '0' and slew = 0
+           else i when oen = '0'
 -- pragma translate_off
-           else 'X' after 2 ns when is_x(oen)
+           else 'X' after 2 ns when is_x(oen) and slew = 0
+           else 'X' when is_x(oen)
 -- pragma translate_on
-           else 'Z' after 2 ns;
+           else 'Z' after 2 ns when slew = 0
+           else 'Z';
     o <= to_X01(pad) after 1 ns;
   end generate;
   xcv : if (is_unisim(tech) = 1) generate
@@ -56,8 +59,16 @@ begin
     x0 : axcel_iopad generic map (level, slew, voltage, strength)
 	 port map (pad, i, oen, o);
   end generate;
-  pa : if (tech = proasic) or (tech = apa3) generate
+  pa3 : if (tech = proasic) or (tech = apa3) generate
     x0 : apa3_iopad generic map (level, slew, voltage, strength, filter)
+	 port map (pad, i, oen, o);
+  end generate;
+  pa3e : if (tech = apa3e) generate
+    x0 : apa3e_iopad generic map (level, slew, voltage, strength, filter)
+	 port map (pad, i, oen, o);
+  end generate;
+  pa3l : if (tech = apa3l) generate
+    x0 : apa3l_iopad generic map (level, slew, voltage, strength, filter)
 	 port map (pad, i, oen, o);
   end generate;
   fus : if (tech = actfus) generate
@@ -96,6 +107,10 @@ begin
     x0 : ut025crh_iopad generic map (level, slew, voltage, strength)
 	 port map (pad, i, oen, o);
   end generate;
+  ut13  : if (tech = ut130) generate
+    x0 : ut130hbd_iopad generic map (level, slew, voltage, strength)
+	 port map (pad, i, oen, o);
+  end generate;
   pere  : if (tech = peregrine) generate
     x0 : peregrine_iopad generic map (level, slew, voltage, strength)
          port map(pad, i, oen, o);
@@ -103,6 +118,14 @@ begin
   nex : if (tech = easic90) generate
     x0 : nextreme_iopad generic map (level, slew, voltage, strength)
 	 port map (pad, i, oen, o);
+  end generate;
+  n2x :  if (tech = easic45) generate
+    x0 : n2x_iopad generic map (level, slew, voltage, strength)
+	 port map (pad, i, oen, o);
+  end generate;
+  ut90nhbd : if (tech = ut90) generate
+    x0 : ut90nhbd_iopad generic map (level, slew, voltage, strength)
+         port map (pad, i, oen, o);
   end generate;
 end;
 

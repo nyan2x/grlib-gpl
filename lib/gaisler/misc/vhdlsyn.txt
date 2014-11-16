@@ -4,6 +4,8 @@ gptimer.vhd
 ahbram.vhd
 ahbdpram.vhd
 ahbtrace.vhd
+ahbtrace_mb.vhd
+ahbtrace_mmb.vhd
 ahbmst.vhd
 grgpio.vhd
 ftahbram.vhd
@@ -16,12 +18,13 @@ charrom.vhd
 apbvga.vhd
 ahb2ahb.vhd
 ahbbridge.vhd
-ahbdma.vhd
+#ahbdma.vhd
 svgactrl.vhd
 grfifo.vhd
 gradcdac.vhd
 i2cmst.vhd
 i2cmst_gen.vhd
+spictrlx.vhd
 spictrl.vhd
 i2cslv.vhd
 wild.vhd
@@ -29,3 +32,6 @@ wild2ahb.vhd
 grsysmon.vhd
 gracectrl.vhd
 grgpreg.vhd
+ahbmst2.vhd
+memscrub.vhd
+ahb_mst_iface.vhd

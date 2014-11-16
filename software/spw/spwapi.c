@@ -41,7 +41,7 @@ static inline int loadmem(int addr)
 
 int spw_setparam(int nodeaddr, int clkdiv, int destkey,
                  int timetxen, int timerxen, int spwadr, 
-                 int khz, struct spwvars *spw) 
+                 int khz, struct spwvars *spw, int port) 
 {
         if ((nodeaddr < 0) || (nodeaddr > 255)) {
                 return 1;
@@ -64,6 +64,7 @@ int spw_setparam(int nodeaddr, int clkdiv, int destkey,
         spw->nodeaddr = nodeaddr;
         spw->clkdiv = clkdiv;
         spw->khz = khz;
+	spw->port = port;
         spw->regs = (struct spwregs *) spwadr;
         return 0;
 }
@@ -141,7 +142,7 @@ int spw_init(struct spwvars *spw)
                 spw->regs->dma[i].rxdesc = (int) spw->dma[i].rxd;
         }
         spw->regs->status = 0xFFF; /*clear status*/
-        spw->regs->ctrl = 0x2 | (spw->timetxen << 10) | (spw->timerxen << 11); /*set ctrl*/
+        spw->regs->ctrl = 0x2 | (spw->timetxen << 10) | (spw->timerxen << 11) | (spw->port << 21); /*set ctrl*/
         for(i = 0; i < spw->dmachan; i++) {
                 spw->regs->dma[i].ctrl = loadmem((int)&(spw->regs->dma[i].ctrl)) | (spw->dma[i].nospill << 12);
         }
@@ -193,7 +194,7 @@ void spw_disable(struct spwvars *spw)
 
 void spw_enable(struct spwvars *spw) 
 {
-        spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) & 0x20F7E;
+        spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) & 0x220F7E;
 }
 
 void spw_start(struct spwvars *spw) 
@@ -203,7 +204,7 @@ void spw_start(struct spwvars *spw)
 
 void spw_stop(struct spwvars *spw) 
 {
-        spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) & 0x20F7D;
+        spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) & 0x220F7D;
 }
 
 int spw_setclockdiv(struct spwvars *spw) 
@@ -278,6 +279,7 @@ int spw_tx(int dmachan, int hcrc, int dcrc, int skipcrcsize, int hsize, char *hb
                 spw->dma[dmachan].txd[spw->dma[dmachan].txpnt].ctrl = 0x1000 | hsize | (hcrc << 16) | (dcrc << 17) | (skipcrcsize << 8);
                 spw->dma[dmachan].txpnt++;
         }
+        
         spw->regs->dma[dmachan].ctrl = loadmem((int)&(spw->regs->dma[dmachan].ctrl)) & 0xFAAA | 1;
         
         return 0;
@@ -350,6 +352,29 @@ void send_time(struct spwvars *spw)
         spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) | (1 << 4);
 }
 
+int send_time_exp(int ctrl, int time, struct spwvars *spw)
+{
+        int i;
+        int code;
+        if ((time < 0) || (time > 63)) {
+                printf("Illegal time-value");
+                return -1;
+        }
+        if (time == 0) {
+                time = 63;
+        } else {
+                time = time - 1;
+        }
+        code = ((ctrl << 6) & 0xC0) | time;
+        
+        while( ((loadmem((int)&(spw->regs->ctrl)) >> 4) & 1)) {
+                for(i = 0; i < 16; i++) {}
+        }
+        spw->regs->timereg = (loadmem((int)&(spw->regs->timereg)) & 0xFFFFFF00) | (0xFF & code);
+        spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) | (1 << 4);
+        return 0;
+}
+
 int check_time(struct spwvars *spw) 
 {
         int tmp = loadmem((int)&(spw->regs->status)) & 1;
@@ -364,6 +389,11 @@ int get_time(struct spwvars *spw)
         return (loadmem((int)&(spw->regs->timereg)) & 0x3F );
 }
 
+int get_time_ctrl(struct spwvars *spw) 
+{
+        return ((loadmem((int)&(spw->regs->timereg)) >> 6) & 0x3);
+}
+
 void spw_reset(struct spwvars *spw) 
 {
   spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) | (1 << 6);
@@ -376,7 +406,7 @@ void spw_rmapen(struct spwvars *spw)
 
 void spw_rmapdis(struct spwvars *spw) 
 {
-  spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) & 0xEFFFF;
+  spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) & 0x2EFFFF;
 }
 
 int spw_setdestkey(struct spwvars *spw) 
@@ -408,5 +438,15 @@ void spw_enablerx(int dmachan, struct spwvars *spw)
 void spw_disablerx(int dmachan, struct spwvars *spw) 
 {
         spw->regs->dma[dmachan].ctrl = loadmem((int)&(spw->regs->dma[dmachan].ctrl)) & 0xFFFFFFFD;
+}
+
+void spw_disable_promiscuous(struct spwvars *spw) 
+{
+        spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) & 0xFFFFFFDF;
+}
+
+void spw_enable_promiscuous(struct spwvars *spw) 
+{
+        spw->regs->ctrl = loadmem((int)&(spw->regs->ctrl)) | (1 << 5);
 }
 

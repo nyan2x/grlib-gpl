@@ -51,11 +51,12 @@ package devices is
   constant VENDOR_ORBITA     : amba_vendor_type := 16#17#;
   constant VENDOR_SYNOPSYS   : amba_vendor_type := 16#21#;
   constant VENDOR_NASA       : amba_vendor_type := 16#22#;
-  constant VENDOR_CAL        : amba_vendor_type := 16#CA#;
-  constant VENDOR_EMBEDDIT   : amba_vendor_type := 16#EA#;
-  constant VENDOR_CETON      : amba_vendor_type := 16#CB#;
+  constant VENDOR_S3         : amba_vendor_type := 16#31#;
   constant VENDOR_ACTEL      : amba_vendor_type := 16#AC#;
   constant VENDOR_APPLECORE  : amba_vendor_type := 16#AE#;
+  constant VENDOR_CAL        : amba_vendor_type := 16#CA#;
+  constant VENDOR_CETON      : amba_vendor_type := 16#CB#;
+  constant VENDOR_EMBEDDIT   : amba_vendor_type := 16#EA#;
 
 -- Gaisler Research device id's
 
@@ -72,6 +73,7 @@ package devices is
   constant GAISLER_IRQMP     : amba_device_type := 16#00D#;
   constant GAISLER_AHBRAM    : amba_device_type := 16#00E#;
   constant GAISLER_AHBDPRAM  : amba_device_type := 16#00F#;
+  constant GAISLER_GRIOMMU2  : amba_device_type := 16#010#;
   constant GAISLER_GPTIMER   : amba_device_type := 16#011#;
   constant GAISLER_PCITRG    : amba_device_type := 16#012#;
   constant GAISLER_PCISBRG   : amba_device_type := 16#013#;
@@ -125,13 +127,15 @@ package devices is
   constant GAISLER_ASCS      : amba_device_type := 16#043#;
   constant GAISLER_IPMVBCTRL : amba_device_type := 16#044#;
   constant GAISLER_SPIMCTRL  : amba_device_type := 16#045#;
+  constant GAISLER_L4STAT    : amba_device_type := 16#047#;
   constant GAISLER_LEON4     : amba_device_type := 16#048#;
   constant GAISLER_LEON4DSU  : amba_device_type := 16#049#;
   constant GAISLER_PWM       : amba_device_type := 16#04A#;
   constant GAISLER_L2CACHE   : amba_device_type := 16#04B#;
   constant GAISLER_SDCTRL64  : amba_device_type := 16#04C#;
   constant GAISLER_GR1553B   : amba_device_type := 16#04D#;
-
+  constant GAISLER_1553TST   : amba_device_type := 16#04E#;
+  constant GAISLER_GRIOMMU   : amba_device_type := 16#04F#;
   constant GAISLER_FTAHBRAM  : amba_device_type := 16#050#;
   constant GAISLER_FTSRCTRL  : amba_device_type := 16#051#;
   constant GAISLER_AHBSTAT   : amba_device_type := 16#052#;
@@ -139,6 +143,8 @@ package devices is
   constant GAISLER_FTMCTRL   : amba_device_type := 16#054#;
   constant GAISLER_FTSDCTRL  : amba_device_type := 16#055#;
   constant GAISLER_FTSRCTRL8 : amba_device_type := 16#056#;
+  constant GAISLER_MEMSCRUB  : amba_device_type := 16#057#;
+  constant GAISLER_FTSDCTRL64: amba_device_type := 16#058#;
 
   constant GAISLER_APBPS2    : amba_device_type := 16#060#;
   constant GAISLER_VGACTRL   : amba_device_type := 16#061#;
@@ -151,6 +157,8 @@ package devices is
   constant GAISLER_ATAHBSLV  : amba_device_type := 16#068#;
   constant GAISLER_ATAHBMST  : amba_device_type := 16#069#;
   constant GAISLER_ATAPBSLV  : amba_device_type := 16#06A#;
+  constant GAISLER_MIGDDR2   : amba_device_type := 16#06B#;
+  constant GAISLER_LCDCTRL   : amba_device_type := 16#06C#;
 
   constant GAISLER_B1553BC   : amba_device_type := 16#070#;
   constant GAISLER_B1553RT   : amba_device_type := 16#071#;
@@ -163,6 +171,10 @@ package devices is
   constant GAISLER_TEST_1X2  : amba_device_type := 16#078#;
   constant GAISLER_WILD2AHB  : amba_device_type := 16#079#;
   constant GAISLER_BIO1      : amba_device_type := 16#07A#;
+  constant GAISLER_AESDMA    : amba_device_type := 16#07B#;
+  constant GAISLER_GRPCI2    : amba_device_type := 16#07C#;
+  constant GAISLER_GRPCI2_DMA: amba_device_type := 16#07D#;
+  constant GAISLER_GRPCI2_TB : amba_device_type := 16#07E#;
 
   constant GAISLER_SATCAN    : amba_device_type := 16#080#;
   constant GAISLER_CANMUX    : amba_device_type := 16#081#;
@@ -173,6 +185,13 @@ package devices is
   constant GAISLER_GEFFE     : amba_device_type := 16#086#;
   constant GAISLER_GPREG     : amba_device_type := 16#087#;
   constant GAISLER_GRTMPAHB  : amba_device_type := 16#088#;
+  constant GAISLER_SPWCUC    : amba_device_type := 16#089#;
+  constant GAISLER_SPW2_DMA  : amba_device_type := 16#08A#;
+  constant GAISLER_SPWROUTER : amba_device_type := 16#08B#;
+  constant GAISLER_EDCLMST   : amba_device_type := 16#08C#;
+  constant GAISLER_GRPWTX    : amba_device_type := 16#08D#;
+  constant GAISLER_GRPWRX    : amba_device_type := 16#08E#;
+
 
 -- Sun Microsystems
 
@@ -268,6 +287,7 @@ package devices is
 
   constant APPLECORE_UTLEON3    : amba_device_type := 16#001#;
   constant APPLECORE_UTLEON3DSU : amba_device_type := 16#002#;
+  constant APPLECORE_APBPERFCNT : amba_device_type := 16#003#;
 
 -- Contribution library ID's
 
@@ -280,22 +300,28 @@ package devices is
 
   constant LEON3_NEXTREME1      : system_device_type := 16#0101#;
   constant LEON4_NEXTREME1      : system_device_type := 16#0102#;
+  constant LEON3_ACT_FUSION     : system_device_type := 16#0105#;
   constant LEON3_RTAX_CID2      : system_device_type := 16#0202#;
   constant LEON3_RTAX_CID5      : system_device_type := 16#0205#;
   constant LEON3_RTAX_CID6      : system_device_type := 16#0206#;
   constant LEON3_RTAX_CID7      : system_device_type := 16#0207#;
   constant LEON3_RTAX_CID8      : system_device_type := 16#0208#;
   constant LEON3_IHP25RH1       : system_device_type := 16#0251#;
-  constant LEON3FT_GRXC4V       : system_device_type := 16#0453#;
+  constant NGMP_PROTOTYPE       : system_device_type := 16#0281#;
+  constant ALTERA_DE2           : system_device_type := 16#0302#;
   constant XILINX_ML401         : system_device_type := 16#0401#;
+  constant LEON3FT_GRXC4V       : system_device_type := 16#0453#;
   constant XILINX_ML501         : system_device_type := 16#0501#;
   constant XILINX_ML505         : system_device_type := 16#0505#;
   constant XILINX_ML506         : system_device_type := 16#0506#;
   constant XILINX_ML507         : system_device_type := 16#0507#;
   constant XILINX_ML509         : system_device_type := 16#0509#;
   constant XILINX_ML510         : system_device_type := 16#0510#;
+  constant XILINX_SP601         : system_device_type := 16#0601#;
+  constant XILINX_ML605         : system_device_type := 16#0605#;
   constant ORBITA_1             : system_device_type := 16#0631#;
   constant AEROFLEX_UT699       : system_device_type := 16#0699#;
+  constant AEROFLEX_UT700       : system_device_type := 16#0700#;
   constant GAISLER_GR702        : system_device_type := 16#0702#;
   constant GAISLER_DARE1        : system_device_type := 16#0704#;
   constant GAISLER_GR712RC      : system_device_type := 16#0712#;
@@ -354,6 +380,7 @@ package devices is
    GAISLER_FTMCTRL   => "Memory controller with EDAC    ",
    GAISLER_FTSDCTRL  => "FT PC133 SDRAM Controller      ",
    GAISLER_FTSRCTRL8 => "FT 8-bit SRAM/16-bit IO Ctrl   ",
+   GAISLER_FTSDCTRL64=> "64-bit FT SDRAM Controller     ",
    GAISLER_AHBSTAT   => "AHB Status Register            ",
    GAISLER_AHBJTAG   => "JTAG Debug Link                ",
    GAISLER_ETHMAC    => "GR Ethernet MAC                ",
@@ -375,8 +402,13 @@ package devices is
    GAISLER_GRTMVC    => "CCSDS Telemetry VC Generator   ",
    GAISLER_GRTMPAHB  => "CCSDS Telemetry VC AHB Input   ",
    GAISLER_GEFFE     => "Geffe Generator                ",
+   GAISLER_SPWCUC    => "CCSDS CUC / SpaceWire I/F      ",
    GAISLER_GPREG     => "General Purpose Register       ",
    GAISLER_AES       => "Advanced Encryption Standard   ",
+   GAISLER_AESDMA    => "AES 256 DMA                    ",
+   GAISLER_GRPCI2    => "GRPCI2 PCI/AHB bridge          ",
+   GAISLER_GRPCI2_DMA=> "GRPCI2 DMA interface           ",
+   GAISLER_GRPCI2_TB => "GRPCI2 Trace buffer            ",
    GAISLER_ECC       => "Elliptic Curve Cryptography    ",
    GAISLER_PCIF      => "AMBA Wrapper for CorePCIF      ",
    GAISLER_USBDC     => "GR USB 2.0 Device Controller   ",
@@ -402,17 +434,31 @@ package devices is
    GAISLER_SPW2      => "GRSPW2 SpaceWire Serial Link   ",
    GAISLER_IPMVBCTRL => "IPM-bus/MVBC memory controller ",
    GAISLER_SPIMCTRL  => "SPI Memory Controller          ",
+   GAISLER_L4STAT    => "Leon4 Statistics Unit          ",
    GAISLER_LEON4     => "Leon4 SPARC V8 Processor       ",
    GAISLER_LEON4DSU  => "Leon4 Debug Support Unit       ",
    GAISLER_PWM       => "PWM generator                  ",
    GAISLER_L2CACHE   => "L2-Cache Controller            ",
+   GAISLER_SDCTRL64  => "64-bit PC133 SDRAM Controller  ",
    GAISLER_MP7WRAP   => "CoreMP7 wrapper                ",
    GAISLER_GRSYSMON  => "AMBA wrapper for System Monitor",
    GAISLER_GRACECTRL => "System ACE I/F Controller      ",
    GAISLER_ATAHBSLV  => "AMBA Test Framework AHB Slave  ",
    GAISLER_ATAHBMST  => "AMBA Test Framework AHB Master ",
    GAISLER_ATAPBSLV  => "AMBA Test Framework APB Slave  ",
+   GAISLER_MIGDDR2   => "Xilinx MIG DDR2 Controller     ",
+   GAISLER_LCDCTRL   => "LCD Controller                 ",
    GAISLER_GR1553B   => "MIL-STD-1553B Interface        ",
+   GAISLER_1553TST   => "MIL-STD-1553B Test Device      ",
+   GAISLER_MEMSCRUB  => "AHB Memory Scrubber            ",
+   GAISLER_GRIOMMU   => "IO Memory Management Unit      ",
+   GAISLER_SPW2_DMA  => "GRSPW Router DMA interface     ",
+   GAISLER_SPWROUTER => "GRSPW Router                   ",
+   GAISLER_EDCLMST   => "EDCL master interface          ",
+   GAISLER_GRPWTX    => "PacketWire Transmitter with DMA",
+   GAISLER_GRPWRX    => "PacketWire Receiver with DMA   ",
+   GAISLER_GRIOMMU2  => "IOMMU secondary master i/f     ",
+
    others            => "Unknown Device                 ");
 
    constant gaisler_lib : vendor_library_type := (
@@ -652,6 +698,17 @@ package devices is
      device_table      => nasa_device_table
    );
 
+  constant S3_DESC : vendor_description :=   "S3 Group                ";
+
+  constant s3_device_table : device_table_type := (
+   others             => "Unknown Device                 ");
+
+  constant s3_lib : vendor_library_type := (
+     vendorid 	       => VENDOR_S3,
+     vendordesc        => S3_DESC,
+     device_table      => s3_device_table
+   );
+
   constant APPLECORE_DESC : vendor_description :=   "AppleCore               ";
   constant applecore_device_table : device_table_type := (
       APPLECORE_UTLEON3     => "AppleCore uT-LEON3 Processor   ",
@@ -691,6 +748,7 @@ package devices is
     VENDOR_CETON       => ceton_lib,
     VENDOR_ACTEL       => actel_lib,
     VENDOR_NASA        => nasa_lib,
+    VENDOR_S3          => s3_lib,
     others             => unknown_lib);
 
   type system_table_type is array (0 to 4095) of device_description;
@@ -698,11 +756,13 @@ package devices is
   constant system_table : system_table_type := (
    LEON3_NEXTREME1   => "LEON3 eASIC Nextreme controller",
    LEON4_NEXTREME1   => "LEON4 eASIC Nextreme SoC       ",
+   LEON3_ACT_FUSION  => "LEON3 Actel Fusion Dev. board  ",
    LEON3_RTAX_CID2   => "LEON3FT RTAX Configuration 2   ",
    LEON3_RTAX_CID5   => "LEON3FT RTAX Configuration 5   ",
    LEON3_RTAX_CID6   => "LEON3FT RTAX Configuration 6   ",
    LEON3_RTAX_CID7   => "LEON3FT RTAX Configuration 7   ",
    LEON3_RTAX_CID8   => "LEON3FT RTAX Configuration 8   ",
+   ALTERA_DE2        => "Altera DE2 Development board   ",
    XILINX_ML401      => "Xilinx ML401 Development board ",
    XILINX_ML501      => "Xilinx ML501 Development board ",
    XILINX_ML505      => "Xilinx ML505 Development board ",
@@ -710,9 +770,13 @@ package devices is
    XILINX_ML507      => "Xilinx ML507 Development board ",
    XILINX_ML509      => "Xilinx ML509 Development board ",
    XILINX_ML510      => "Xilinx ML510 Development board ",
+   XILINX_SP601      => "Xilinx SP601 Development board ",
+   XILINX_ML605      => "Xilinx ML605 Development board ",
    AEROFLEX_UT699    => "Aeroflex UT699 Rad-Hard CPU    ",
+   AEROFLEX_UT700    => "Aeroflex UT700 Rad-Hard CPU    ",
    GAISLER_DARE1     => "Gaisler DARE1 Rad-Hard CPU     ",
    GAISLER_GR712RC   => "Gaisler GR712RC Rad-Hard CPU   ",
+   NGMP_PROTOTYPE    => "NGMP Prototype System-on-Chip  ",
    others            => "Unknown system                 ");
 
 -- pragma translate_on

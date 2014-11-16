@@ -47,8 +47,14 @@ begin
   axc : if (tech = axcel) or (tech = axdsp) generate
     x0 : axcel_inpad generic map (level, voltage) port map (pad, o);
   end generate;
-  pa : if (tech = proasic) or (tech = apa3) generate
+  pa3 : if (tech = proasic) or (tech = apa3) generate
     x0 : apa3_inpad generic map (level, voltage, filter) port map (pad, o);
+  end generate;
+  pa3e : if (tech = apa3e) generate
+    x0 : apa3e_inpad generic map (level, voltage, filter) port map (pad, o);
+  end generate;
+  pa3l : if (tech = apa3l) generate
+    x0 : apa3l_inpad generic map (level, voltage, filter) port map (pad, o);
   end generate;
   fus : if (tech = actfus) generate
     x0 : fusion_inpad generic map (level, voltage, filter) port map (pad, o);
@@ -77,11 +83,20 @@ begin
   ut025 : if (tech = ut25) generate
     x0 : ut025crh_inpad generic map (level, voltage, filter) port map(pad, o);
   end generate;
+  ut13  : if (tech = ut130) generate
+    x0 : ut130hbd_inpad generic map (level, voltage, filter) port map(pad, o);
+  end generate;
   pereg : if (tech = peregrine) generate
     x0 : peregrine_inpad generic map (level, voltage, filter, strength) port map(pad, o);
   end generate;
   eas : if (tech = easic90) generate
     x0 : nextreme_inpad generic map (level, voltage) port map (pad, o);
+  end generate;
+  n2x : if (tech = easic45) generate
+    x0 : n2x_inpad generic map (level, voltage) port map (pad, o);
+  end generate;
+  ut90nhbd : if (tech = ut90) generate
+    x0 : ut90nhbd_inpad generic map (level, voltage, filter) port map(pad, o);
   end generate;
 end;
 

@@ -7,7 +7,7 @@ UCF=$(GRLIB)/boards/$(BOARD)/$(TOP).ucf
 QSF=$(GRLIB)/boards/$(BOARD)/$(TOP).qsf
 EFFORT=med
 MAPOPT=
-XSTOPT=
+XSTOPT=""
 SYNPOPT="set_option -pipe 0; set_option -retiming 0; set_option -write_apr_constraint 0"
 VHDLSYNFILES=config.vhd ahbrom.vhd leon3mp.vhd
 VHDLSIMFILES=testbench.vhd
@@ -16,7 +16,7 @@ SDCFILE=$(GRLIB)/boards/$(BOARD)/default.sdc
 BITGEN=$(GRLIB)/boards/$(BOARD)/default.ut
 CLEAN=soft-clean
 
-TECHLIBS = unisim
+TECHLIBS = unisim secureip
 LIBSKIP = core1553bbc core1553brm core1553brt gr1553 corePCIF gsi \
 	tmtc openchip hynix cypress ihp gleichmann fmf spansion usbhc
 DIRSKIP = b1553 pcif leon2 leon2ft crypto satcan ddr usb ata grusbhc haps \

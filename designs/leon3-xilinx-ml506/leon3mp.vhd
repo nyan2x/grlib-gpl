@@ -249,6 +249,7 @@ signal i2co, dvi_i2co : i2c_out_type;
 constant BOARD_FREQ_200 : integer := 200000;   -- input frequency in KHz
 constant BOARD_FREQ : integer := 100000;   -- input frequency in KHz
 constant CPU_FREQ : integer := BOARD_FREQ * CFG_CLKMUL / CFG_CLKDIV;  -- cpu frequency in KHz
+constant I2C_FILTER : integer := (CPU_FREQ*5+50000)/100000+1;
 constant IOAEN : integer := CFG_DDR2SP;
 
 signal stati : ahbstat_in_type;
@@ -283,6 +284,10 @@ attribute syn_keep of clk40 : signal is true;
 attribute syn_preserve of clk40 : signal is true;
 attribute syn_keep of clk65 : signal is true;
 attribute syn_preserve of clk65 : signal is true;
+attribute syn_keep of clk_200 : signal is true;
+attribute syn_preserve of clk_200 : signal is true;
+
+
 attribute keep : boolean;
 attribute keep of lock : signal is true;
 attribute keep of clkml : signal is true;
@@ -292,6 +297,7 @@ attribute keep of clkvga : signal is true;
 attribute keep of clk25 : signal is true;
 attribute keep of clk40 : signal is true;
 attribute keep of clk65 : signal is true;
+attribute keep of clk_200 : signal is true;
 
 attribute syn_noprune : boolean;
 attribute syn_noprune of clk_33_pad : label is true;
@@ -583,7 +589,8 @@ begin
                 vgalock, lcd_datal, lcd_hsyncl, lcd_vsyncl, lcd_del);
     
     i2cdvi : i2cmst
-      generic map (pindex => 9, paddr => 9, pmask => 16#FFF#, pirq => 14)
+      generic map (pindex => 9, paddr => 9, pmask => 16#FFF#,
+                   pirq => 14, filter => I2C_FILTER)
       port map (rstn, clkm, apbi, apbo(9), dvi_i2ci, dvi_i2co);
   end generate;
 

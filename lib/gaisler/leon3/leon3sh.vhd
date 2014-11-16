@@ -54,13 +54,13 @@ entity leon3sh is
     notag     : integer range 0 to 1  := 0;
     nwp       : integer range 0 to 4  := 0;
     icen      : integer range 0 to 1  := 0;
-    irepl     : integer range 0 to 2  := 2;
+    irepl     : integer range 0 to 3  := 2;
     isets     : integer range 1 to 4  := 1;
     ilinesize : integer range 4 to 8  := 4;
     isetsize  : integer range 1 to 256 := 1;
     isetlock  : integer range 0 to 1  := 0;
     dcen      : integer range 0 to 1  := 0;
-    drepl     : integer range 0 to 2  := 2;
+    drepl     : integer range 0 to 3  := 2;
     dsets     : integer range 1 to 4  := 1;
     dlinesize : integer range 4 to 8  := 4;
     dsetsize  : integer range 1 to 256 := 1;
@@ -126,6 +126,7 @@ signal cpo   : fpc_out_type;
 signal rd1, rd2, wd : std_logic_vector(35 downto 0);
 signal gnd, vcc : std_logic;
 
+constant IRFWT     : integer := 1;--regfile_3p_write_through(memtech);
 constant FPURFHARD : integer := 1; --1-is_fpga(memtech);
 constant fpuarch   : integer := fpu mod 16;
 constant fpunet    : integer := fpu / 16;
@@ -148,7 +149,7 @@ begin
   
 -- IU register file
   
-    rf0 : regfile_3p generic map (memtech, IRFBITS, 32, syncram_2p_write_through(memtech), IREGNUM)
+    rf0 : regfile_3p generic map (memtech, IRFBITS, 32, IRFWT, IREGNUM)
         port map (clk, rfi.waddr(IRFBITS-1 downto 0), rfi.wdata, rfi.wren, 
 		  clk, rfi.raddr1(IRFBITS-1 downto 0), rfi.ren1, rfo.data1, 
 		  rfi.raddr2(IRFBITS-1 downto 0), rfi.ren2, rfo.data2, rfi.diag);

@@ -1,8 +1,6 @@
 
 
 
-
-
 -----------------------------------------------------------------------------
 -- LEON3 Demonstration design test bench configuration
 -- Copyright (C) 2009 Aeroflex Gaisler
@@ -23,7 +21,9 @@ package config is
   constant CFG_CLKTECH : integer := spartan3;
   constant CFG_CLKMUL : integer := (8);
   constant CFG_CLKDIV : integer := (25);
-  constant CFG_OCLKDIV : integer := 2;
+  constant CFG_OCLKDIV : integer := 1;
+  constant CFG_OCLKBDIV : integer := 0;
+  constant CFG_OCLKCDIV : integer := 0;
   constant CFG_PCIDLL : integer := 0;
   constant CFG_PCISYSCLK: integer := 0;
   constant CFG_CLK_NOFB : integer := 0;
@@ -31,12 +31,13 @@ package config is
   constant CFG_LEON3 : integer := 1;
   constant CFG_NCPU : integer := (1);
   constant CFG_NWIN : integer := (8);
-  constant CFG_V8 : integer := 2;
+  constant CFG_V8 : integer := 2 + 4*0;
   constant CFG_MAC : integer := 0;
   constant CFG_BP : integer := 1;
   constant CFG_SVT : integer := 1;
   constant CFG_RSTADDR : integer := 16#00000#;
   constant CFG_LDDEL : integer := (1);
+  constant CFG_NOTAG : integer := 0;
   constant CFG_NWP : integer := (2);
   constant CFG_PWD : integer := 1*2;
   constant CFG_FPU : integer := 0 + 16*0;
@@ -94,12 +95,12 @@ package config is
 -- JTAG based DSU interface
   constant CFG_AHB_JTAG : integer := 1;
 -- Ethernet DSU
-  constant CFG_DSU_ETH : integer := 0 + 0;
-  constant CFG_ETH_BUF : integer := 1;
+  constant CFG_DSU_ETH : integer := 1 + 0 + 0;
+  constant CFG_ETH_BUF : integer := 2;
   constant CFG_ETH_IPM : integer := 16#C0A8#;
   constant CFG_ETH_IPL : integer := 16#0033#;
   constant CFG_ETH_ENM : integer := 16#020000#;
-  constant CFG_ETH_ENL : integer := 16#000009#;
+  constant CFG_ETH_ENL : integer := 16#001234#;
 -- LEON2 memory controller
   constant CFG_MCTRL_LEON2 : integer := 1;
   constant CFG_MCTRL_RAM8BIT : integer := 1;
@@ -138,9 +139,9 @@ package config is
   constant CFG_AHBRSZ : integer := 1;
   constant CFG_AHBRADDR : integer := 16#A00#;
 -- Gaisler Ethernet core
-  constant CFG_GRETH : integer := 0;
+  constant CFG_GRETH : integer := 1;
   constant CFG_GRETH1G : integer := 0;
-  constant CFG_ETH_FIFO : integer := 8;
+  constant CFG_ETH_FIFO : integer := 16;
 -- UART 1
   constant CFG_UART1_ENABLE : integer := 1;
   constant CFG_UART1_FIFO : integer := 4;
@@ -178,12 +179,17 @@ package config is
 
 -- SPI controller
   constant CFG_SPICTRL_ENABLE : integer := 0;
+  constant CFG_SPICTRL_NUM : integer := 1;
   constant CFG_SPICTRL_SLVS : integer := 1;
   constant CFG_SPICTRL_FIFO : integer := 1;
   constant CFG_SPICTRL_SLVREG : integer := 0;
   constant CFG_SPICTRL_ODMODE : integer := 0;
   constant CFG_SPICTRL_AM : integer := 0;
   constant CFG_SPICTRL_ASEL : integer := 0;
+  constant CFG_SPICTRL_TWEN : integer := 0;
+  constant CFG_SPICTRL_MAXWLEN : integer := 0;
+  constant CFG_SPICTRL_SYNCRAM : integer := 0;
+  constant CFG_SPICTRL_FT : integer := 0;
 
 -- GRLIB debugging
   constant CFG_DUART : integer := 0;

@@ -32,7 +32,7 @@ use techmap.allpads.all;
 entity iopad_ds is
   generic (tech : integer := 0; level : integer := 0; slew : integer := 0;
 	   voltage : integer := x33v; strength : integer := 12;
-	   oepol : integer := 0);
+	   oepol : integer := 0;  term : integer := 0);
   port (padp, padn : inout std_ulogic; i, en : in std_ulogic; o : out std_ulogic);
 end;
 
@@ -42,7 +42,7 @@ begin
   oen <= not en when oepol /= padoen_polarity(tech) else en;
   gen0 : if has_ds_pads(tech) = 0 or 
            tech = axcel or tech = axdsp or tech = rhlib18t or
-           tech = ut25 generate
+           tech = ut25 or tech = ut130 generate
     padp <= i after 2 ns when oen = '0'
 -- pragma translate_off
            else 'X' after 2 ns when is_x(oen)
@@ -59,12 +59,24 @@ begin
     x0 : unisim_iopad_ds generic map (level, slew, voltage, strength)
 	 port map (padp, padn, i, oen, o);
   end generate;
-  pa : if (tech = apa3) generate
+  pa3 : if (tech = apa3) generate
     x0 : apa3_iopad_ds generic map (level)
+	 port map (padp, padn, i, oen, o);
+  end generate;
+  pa3e : if (tech = apa3e) generate
+    x0 : apa3e_iopad_ds generic map (level)
+	 port map (padp, padn, i, oen, o);
+  end generate;
+  pa3l : if (tech = apa3l) generate
+    x0 : apa3l_iopad_ds generic map (level)
 	 port map (padp, padn, i, oen, o);
   end generate;
   fus : if (tech = actfus) generate
     x0 : fusion_iopad_ds generic map (level)
+	 port map (padp, padn, i, oen, o);
+  end generate;
+  n2x : if (tech = easic45) generate
+    x0 : n2x_iopad_ds generic map (level, slew, voltage, strength)
 	 port map (padp, padn, i, oen, o);
   end generate;
 end;

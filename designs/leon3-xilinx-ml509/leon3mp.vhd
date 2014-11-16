@@ -249,6 +249,7 @@ signal i2co, dvi_i2co : i2c_out_type;
 constant BOARD_FREQ_200 : integer := 200000;   -- input frequency in KHz
 constant BOARD_FREQ : integer := 100000;   -- input frequency in KHz
 constant CPU_FREQ : integer := BOARD_FREQ * CFG_CLKMUL / CFG_CLKDIV;  -- cpu frequency in KHz
+constant I2C_FILTER : integer := (CPU_FREQ*5+50000)/100000+1;
 constant IOAEN : integer := CFG_DDR2SP;
 
 signal stati : ahbstat_in_type;
@@ -283,6 +284,9 @@ attribute syn_keep of clk40 : signal is true;
 attribute syn_preserve of clk40 : signal is true;
 attribute syn_keep of clk65 : signal is true;
 attribute syn_preserve of clk65 : signal is true;
+attribute syn_keep of clk_200 : signal is true;
+attribute syn_preserve of clk_200 : signal is true;
+
 attribute keep : boolean;
 attribute keep of lock : signal is true;
 attribute keep of clkml : signal is true;
@@ -292,6 +296,7 @@ attribute keep of clkvga : signal is true;
 attribute keep of clk25 : signal is true;
 attribute keep of clk40 : signal is true;
 attribute keep of clk65 : signal is true;
+attribute keep of clk_200 : signal is true;
 
 -- Prevent synplify from removing clk_33_pad since
 -- this will lead to I/O standard conflicts
@@ -586,7 +591,8 @@ begin
                 vgalock, lcd_datal, lcd_hsyncl, lcd_vsyncl, lcd_del);
     
     i2cdvi : i2cmst
-      generic map (pindex => 9, paddr => 9, pmask => 16#FFF#, pirq => 14)
+      generic map (pindex => 9, paddr => 9, pmask => 16#FFF#,
+                   pirq => 14, filter => I2C_FILTER)
       port map (rstn, clkm, apbi, apbo(9), dvi_i2ci, dvi_i2co);
   end generate;
 
@@ -634,7 +640,8 @@ begin
 
   i2cm: if CFG_I2C_ENABLE = 1 generate  -- I2C master
     i2c0 : i2cmst
-    generic map (pindex => 12, paddr => 12, pmask => 16#FFF#, pirq => 11)
+    generic map (pindex => 12, paddr => 12, pmask => 16#FFF#,
+                 pirq => 11, filter => I2C_FILTER)
     port map (rstn, clkm, apbi, apbo(12), i2ci, i2co);
     i2c_scl_pad : iopad generic map (tech => padtech)
       port map (iic_scl_main, i2co.scl, i2co.scloen, i2ci.scl);
